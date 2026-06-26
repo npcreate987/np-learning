@@ -1,0 +1,225 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  STUDENT
+  INSTRUCTOR
+  ADMIN
+}
+
+enum CourseStatus {
+  DRAFT
+  PUBLISHED
+}
+
+enum CourseFormat {
+  STANDARD
+  TIKTOK
+}
+
+enum LessonType {
+  TEXT
+  VIDEO
+}
+
+/// Mirror of a Supabase auth user. `id` equals the Supabase user id (sub claim).
+model Profile {
+  id          String   @id
+  email       String   @unique
+  displayName String?
+  role        Role     @default(STUDENT)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  courses     Course[]         @relation("InstructorCourses")
+  enrollments Enrollment[]
+  progress    LessonProgress[]
+  posts        Post[]
+  comments     Comment[]
+  postLikes    PostLike[]
+  quizAttempts QuizAttempt[]
+  certificates Certificate[]
+}
+
+model Course {
+  id            String       @id @default(cuid())
+  slug          String       @unique
+  title         String
+  description   String?
+  coverImageUrl String?
+  status        CourseStatus @default(DRAFT)
+  format        CourseFormat @default(STANDARD)
+  priceCents    Int          @default(0)
+  instructorId  String
+  instructor    Profile      @relation("InstructorCourses", fields: [instructorId], references: [id], onDelete: Cascade)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  sections     Section[]
+  enrollments  Enrollment[]
+  quiz         Quiz?
+  certificates Certificate[]
+
+  @@index([instructorId])
+  @@index([status])
+}
+
+model Section {
+  id       String  @id @default(cuid())
+  courseId String
+  course   Course  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  title    String
+  order    Int     @default(0)
+
+  lessons Lesson[]
+
+  @@index([courseId])
+}
+
+model Lesson {
+  id          String     @id @default(cuid())
+  sectionId   String
+  section     Section    @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  title       String
+  /// Tiptap JSON document
+  contentJson Json       @default("{}")
+  type        LessonType @default(TEXT)
+  order       Int        @default(0)
+  /// Bunny Stream embed URL or direct video URL (for VIDEO lessons)
+  videoUrl    String?
+  /// Short caption shown on TikTok-style clips
+  caption     String?
+  durationSeconds Int?
+  /// Array of { url, name, size?, contentType? }
+  attachments Json       @default("[]")
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  progress LessonProgress[]
+
+  @@index([sectionId])
+}
+
+model Enrollment {
+  id        String   @id @default(cuid())
+  userId    String
+  user      Profile  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId  String
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, courseId])
+  @@index([userId])
+  @@index([courseId])
+}
+
+model LessonProgress {
+  id          String   @id @default(cuid())
+  userId      String
+  user        Profile  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lessonId    String
+  lesson      Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  completedAt DateTime @default(now())
+
+  @@unique([userId, lessonId])
+  @@index([userId])
+  @@index([lessonId])
+}
+
+model Post {
+  id        String   @id @default(cuid())
+  authorId  String
+  author    Profile  @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  comments Comment[]
+  likes    PostLike[]
+
+  @@index([authorId])
+  @@index([createdAt])
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    Profile  @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  content   String
+  createdAt DateTime @default(now())
+
+  @@index([postId])
+  @@index([authorId])
+}
+
+model PostLike {
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  profileId String
+  profile   Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@id([postId, profileId])
+  @@index([profileId])
+}
+
+model Quiz {
+  id           String   @id @default(cuid())
+  courseId     String   @unique
+  course       Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  title        String   @default("แบบทดสอบท้ายคอร์ส")
+  passingScore Int      @default(70)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  questions Question[]
+  attempts  QuizAttempt[]
+}
+
+model Question {
+  id           String @id @default(cuid())
+  quizId       String
+  quiz         Quiz   @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  text         String
+  /// Array of choice strings
+  options      Json   @default("[]")
+  correctIndex Int    @default(0)
+  order        Int    @default(0)
+
+  @@index([quizId])
+}
+
+model QuizAttempt {
+  id        String   @id @default(cuid())
+  quizId    String
+  quiz      Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  userId    String
+  user      Profile  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  score     Int
+  passed    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([quizId])
+  @@index([userId])
+}
+
+model Certificate {
+  id       String   @id @default(cuid())
+  userId   String
+  user     Profile  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId String
+  course   Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  serial   String   @unique
+  issuedAt DateTime @default(now())
+
+  @@unique([userId, courseId])
+  @@index([userId])
+}

@@ -1,0 +1,20 @@
+# build outputs / leftover dev dirs (must not be uploaded to Vercel)
+.next
+out
+build
+devnext*
+
+# deps & caches (Vercel installs fresh)
+node_modules
+.turbo
+.cache
+
+# local env (set these in Vercel dashboard instead)
+.env
+.env.local
+.env.*.local
+
+# misc
+*.tsbuildinfo
+*.log
+.DS_Store

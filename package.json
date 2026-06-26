@@ -1,0 +1,26 @@
+{
+  "name": "online-learning",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@9.15.0",
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "db:up": "docker compose up -d",
+    "db:down": "docker compose down",
+    "api:dev": "pnpm --filter @app/api start:dev",
+    "web:dev": "pnpm --filter @app/web dev",
+    "prisma:migrate": "pnpm --filter @app/api prisma:migrate",
+    "prisma:generate": "pnpm --filter @app/api prisma:generate",
+    "prisma:seed": "pnpm --filter @app/api prisma:seed",
+    "demo": "bash scripts/start-demo.sh"
+  },
+  "devDependencies": {
+    "turbo": "^2.3.3",
+    "typescript": "^5.7.2"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

@@ -1,0 +1,38 @@
+# dependencies
+node_modules
+.pnpm-store
+
+# build outputs
+dist
+.next
+out
+build
+devnext*
+
+# turbo
+.turbo
+
+# local tool caches (prisma engines, etc.)
+.cache
+
+# env
+.env
+.env.local
+.env.*.local
+
+# logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# os / editor
+.DS_Store
+.idea
+.vscode
+
+# prisma
+apps/api/prisma/*.db
+
+# misc
+coverage
+*.tsbuildinfo
