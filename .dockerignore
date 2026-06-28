@@ -1,0 +1,22 @@
+# Env files — never bake into images
+.env
+.env.*
+!.env.example
+
+# Dependencies (installed inside the image)
+**/node_modules
+
+# Build output (rebuilt inside the image)
+**/dist
+**/.next
+**/.turbo
+
+# Local dev / caches
+.git
+.github
+**/*.log
+**/.DS_Store
+
+# Editor / OS
+.vscode
+.idea
