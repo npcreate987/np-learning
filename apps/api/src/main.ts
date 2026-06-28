@@ -27,7 +27,8 @@ async function bootstrap() {
     credentials: true,
   });
 
-  const port = Number(process.env.API_PORT ?? 4000);
+  // Railway injects PORT (dynamic); fall back to API_PORT for local dev, then 4000.
+  const port = Number(process.env.PORT ?? process.env.API_PORT ?? 4000);
   await app.listen(port);
   // eslint-disable-next-line no-console
   console.log(`API listening on http://localhost:${port}/api`);
