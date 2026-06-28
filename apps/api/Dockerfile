@@ -22,4 +22,4 @@ COPY --from=builder /app/apps/api/prisma /app/apps/api/prisma
 WORKDIR /app/apps/api
 ENV NODE_ENV=production
 EXPOSE 4000
-CMD ["sh", "-c", "./node_modules/.bin/prisma migrate deploy && node dist/main.js"]
+CMD ["sh", "-c", "npx prisma migrate deploy && node dist/main.js"]
