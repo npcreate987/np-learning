@@ -13,7 +13,6 @@ function SignupForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [info, setInfo] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   // Capture an affiliate referral code from the URL so the auth provider can
@@ -28,7 +27,6 @@ function SignupForm() {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    setInfo(null);
     setLoading(true);
     const { data, error } = await supabase.auth.signUp({
       email,
@@ -43,7 +41,8 @@ function SignupForm() {
     if (data.session) {
       router.push("/dashboard");
     } else {
-      setInfo("สมัครสำเร็จ! กรุณาตรวจสอบอีเมลเพื่อยืนยันบัญชี แล้วเข้าสู่ระบบ");
+      // Email OTP verification — user enters the 6-digit code on /verify.
+      router.push(`/verify?email=${encodeURIComponent(email)}`);
     }
   }
 
@@ -88,7 +87,6 @@ function SignupForm() {
             />
           </div>
           {error && <p className="text-sm text-red-600">{error}</p>}
-          {info && <p className="text-sm text-green-600">{info}</p>}
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? "กำลังสมัคร..." : "สมัครเรียน"}
           </Button>
