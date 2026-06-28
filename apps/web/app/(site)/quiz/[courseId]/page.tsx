@@ -79,7 +79,7 @@ export default function QuizPage() {
       <Card className="mx-auto mt-10 max-w-lg p-8 text-center">
         <FileQuestion className="mx-auto text-slate-300" size={40} />
         <h1 className="mt-3 text-lg font-bold text-slate-900">ยังไม่มีแบบทดสอบ</h1>
-        <p className="mt-1 text-sm text-slate-500">คอร์สนี้ยังไม่ได้สร้างแบบทดสอบท้ายคอร์ส</p>
+        <p className="mt-1 text-sm text-slate-500">คลาสนี้ยังไม่ได้สร้างแบบทดสอบท้ายคลาส</p>
       </Card>
     );
   }

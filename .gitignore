@@ -33,6 +33,10 @@ pnpm-debug.log*
 # prisma
 apps/api/prisma/*.db
 
+# Capacitor native projects (regenerate with `pnpm cap:add:*`)
+apps/web/android
+apps/web/ios
+
 # misc
 coverage
 *.tsbuildinfo

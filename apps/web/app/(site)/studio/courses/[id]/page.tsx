@@ -6,7 +6,6 @@ import { ArrowLeft, Plus, Save, Trash2, Upload } from "lucide-react";
 import { api, ApiError, uploadFile } from "@/lib/api";
 import { useAuth } from "@/components/auth-provider";
 import { Badge, Button, Card, Input, Label, Textarea } from "@/components/ui";
-import { TiptapEditor } from "@/components/tiptap-editor";
 import Link from "next/link";
 
 interface EditLesson {
@@ -15,6 +14,7 @@ interface EditLesson {
   contentJson: unknown;
   videoUrl?: string | null;
   caption?: string | null;
+  durationSeconds?: number | null;
   order: number;
 }
 interface EditSection {
@@ -30,7 +30,6 @@ interface EditCourse {
   description: string | null;
   coverImageUrl: string | null;
   priceCents: number;
-  format: "STANDARD" | "TIKTOK";
   status: "DRAFT" | "PUBLISHED";
   sections: EditSection[];
 }
@@ -50,12 +49,12 @@ export default function CourseEditorPage() {
   const [savingMeta, setSavingMeta] = useState(false);
   const [uploading, setUploading] = useState(false);
 
-  // lesson editing
+  // clip editing
   const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
   const [lessonTitle, setLessonTitle] = useState("");
   const [lessonVideoUrl, setLessonVideoUrl] = useState("");
   const [lessonCaption, setLessonCaption] = useState("");
-  const [lessonContent, setLessonContent] = useState<unknown>({ type: "doc", content: [] });
+  const [lessonDuration, setLessonDuration] = useState<string>("");
   const [savingLesson, setSavingLesson] = useState(false);
 
   const reload = useCallback(async () => {
@@ -86,7 +85,7 @@ export default function CourseEditorPage() {
     setLessonTitle(lesson.title);
     setLessonVideoUrl(lesson.videoUrl ?? "");
     setLessonCaption(lesson.caption ?? "");
-    setLessonContent(lesson.contentJson ?? { type: "doc", content: [] });
+    setLessonDuration(lesson.durationSeconds ? String(lesson.durationSeconds) : "");
   }
 
   async function saveMeta() {
@@ -128,17 +127,17 @@ export default function CourseEditorPage() {
   }
 
   async function addSection() {
-    await api.post("/sections", { courseId: id, title: "บทใหม่" });
+    await api.post("/sections", { courseId: id, title: "กลุ่มคลิปใหม่" });
     await reload();
   }
   async function renameSection(sectionId: string, current: string) {
-    const next = prompt("ชื่อบท", current);
+    const next = prompt("ชื่อกลุ่มคลิป", current);
     if (next === null) return;
     await api.patch(`/sections/${sectionId}`, { title: next });
     await reload();
   }
   async function deleteSection(sectionId: string) {
-    if (!confirm("ลบบทนี้และบทเรียนทั้งหมดในบท?")) return;
+    if (!confirm("ลบกลุ่มคลิปนี้และคลิปทั้งหมดในกลุ่ม?")) return;
     await api.del(`/sections/${sectionId}`);
     await reload();
   }
@@ -146,7 +145,7 @@ export default function CourseEditorPage() {
   async function addLesson(sectionId: string) {
     const lesson = await api.post<{ id: string }>("/lessons", {
       sectionId,
-      title: "บทเรียนใหม่",
+      title: "คลิปใหม่",
     });
     const c = await reload();
     const created = c.sections
@@ -155,7 +154,7 @@ export default function CourseEditorPage() {
     if (created) selectLesson(created);
   }
   async function deleteLesson(lessonId: string) {
-    if (!confirm("ลบบทเรียนนี้?")) return;
+    if (!confirm("ลบคลิปนี้?")) return;
     await api.del(`/lessons/${lessonId}`);
     if (activeLessonId === lessonId) setActiveLessonId(null);
     await reload();
@@ -165,12 +164,13 @@ export default function CourseEditorPage() {
     if (!activeLessonId) return;
     setSavingLesson(true);
     try {
+      const duration = lessonDuration.trim();
       await api.patch(`/lessons/${activeLessonId}`, {
         title: lessonTitle,
         videoUrl: lessonVideoUrl,
         caption: lessonCaption || undefined,
+        durationSeconds: duration ? Math.max(0, Math.round(Number(duration))) : undefined,
         type: lessonVideoUrl ? "VIDEO" : undefined,
-        contentJson: lessonContent,
       });
       await reload();
     } catch (e) {
@@ -198,7 +198,7 @@ export default function CourseEditorPage() {
         <div className="space-y-5">
           <Card className="p-5">
             <div className="mb-3 flex items-center justify-between">
-              <h2 className="font-semibold text-slate-900">ข้อมูลคอร์ส</h2>
+              <h2 className="font-semibold text-slate-900">ข้อมูลคลาส</h2>
               <Badge
                 className={
                   course.status === "PUBLISHED"
@@ -208,14 +208,11 @@ export default function CourseEditorPage() {
               >
                 {course.status === "PUBLISHED" ? "เผยแพร่แล้ว" : "ฉบับร่าง"}
               </Badge>
-              {course.format === "TIKTOK" && (
-                <Badge className="bg-lime/30 text-ink">คลาส TikTok</Badge>
-              )}
             </div>
 
             <div className="space-y-3">
               <div>
-                <Label>ชื่อคอร์ส</Label>
+                <Label>ชื่อคลาส</Label>
                 <Input value={title} onChange={(e) => setTitle(e.target.value)} />
               </div>
               <div>
@@ -242,7 +239,7 @@ export default function CourseEditorPage() {
                   <img
                     src={course.coverImageUrl}
                     alt="cover"
-                    className="mb-2 aspect-video w-full rounded-lg object-cover"
+                    className="mb-2 aspect-[9/14] w-full max-w-[10rem] rounded-lg object-cover"
                   />
                 )}
                 <label className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-slate-300 px-3 py-3 text-sm text-slate-600 hover:bg-slate-50">
@@ -271,9 +268,9 @@ export default function CourseEditorPage() {
 
           <Card className="p-5">
             <div className="mb-3 flex items-center justify-between">
-              <h2 className="font-semibold text-slate-900">โครงสร้างเนื้อหา</h2>
+              <h2 className="font-semibold text-slate-900">โครงสร้างคลิป</h2>
               <Button size="sm" variant="outline" onClick={addSection}>
-                <Plus size={14} /> เพิ่มบท
+                <Plus size={14} /> เพิ่มกลุ่มคลิป
               </Button>
             </div>
 
@@ -290,7 +287,7 @@ export default function CourseEditorPage() {
                     <button
                       onClick={() => deleteSection(section.id)}
                       className="text-slate-400 hover:text-red-600"
-                      aria-label="ลบบท"
+                      aria-label="ลบกลุ่มคลิป"
                     >
                       <Trash2 size={14} />
                     </button>
@@ -314,7 +311,7 @@ export default function CourseEditorPage() {
                         <button
                           onClick={() => deleteLesson(lesson.id)}
                           className="text-slate-400 hover:text-red-600"
-                          aria-label="ลบบทเรียน"
+                          aria-label="ลบคลิป"
                         >
                           <Trash2 size={13} />
                         </button>
@@ -324,13 +321,13 @@ export default function CourseEditorPage() {
                       onClick={() => addLesson(section.id)}
                       className="flex items-center gap-1 px-2 py-1 text-xs text-brand-600 hover:underline"
                     >
-                      <Plus size={12} /> เพิ่มบทเรียน
+                      <Plus size={12} /> เพิ่มคลิป
                     </button>
                   </div>
                 </div>
               ))}
               {course.sections.length === 0 && (
-                <p className="text-sm text-slate-400">ยังไม่มีบท กด "เพิ่มบท" เพื่อเริ่ม</p>
+                <p className="text-sm text-slate-400">ยังไม่มีกลุ่มคลิป กด "เพิ่มกลุ่มคลิป" เพื่อเริ่ม</p>
               )}
             </div>
           </Card>
@@ -338,7 +335,7 @@ export default function CourseEditorPage() {
           <Link href={`/studio/courses/${id}/quiz`}>
             <Card className="flex items-center justify-between p-4 transition hover:shadow-md">
               <div>
-                <p className="font-semibold text-slate-900">แบบทดสอบท้ายคอร์ส</p>
+                <p className="font-semibold text-slate-900">แบบทดสอบท้ายคลาส</p>
                 <p className="text-sm text-slate-500">สร้างข้อสอบ + ออกใบประกาศเมื่อผ่าน</p>
               </div>
               <Plus size={18} className="text-brand-600" />
@@ -346,65 +343,58 @@ export default function CourseEditorPage() {
           </Link>
         </div>
 
-        {/* Right: lesson editor */}
+        {/* Right: clip editor */}
         <Card className="p-5">
           {activeLessonId ? (
             <div className="space-y-4">
               <div>
-                <Label>ชื่อบทเรียน</Label>
+                <Label>ชื่อคลิป</Label>
                 <Input
                   value={lessonTitle}
                   onChange={(e) => setLessonTitle(e.target.value)}
                 />
               </div>
               <div>
-                <Label>
-                  วิดีโอ{" "}
-                  {course.format === "TIKTOK"
-                    ? "(แนวตั้ง 9:16 — Bunny Stream / .mp4)"
-                    : "(Bunny Stream / YouTube / .mp4)"}
-                </Label>
+                <Label>วิดีโอ (YouTube / .mp4 / Bunny Stream — แนวนอนหรือแนวตั้ง)</Label>
                 <Input
                   value={lessonVideoUrl}
                   onChange={(e) => setLessonVideoUrl(e.target.value)}
-                  placeholder={
-                    course.format === "TIKTOK"
-                      ? "https://...vertical-video.mp4"
-                      : "https://iframe.mediadelivery.net/embed/..."
-                  }
+                  placeholder="วางลิงก์ YouTube หรือ URL .mp4"
                 />
               </div>
-              {course.format === "TIKTOK" && (
-                <div>
-                  <Label>คำบรรยายคลิป (แสดงบนฟีด)</Label>
-                  <Input
-                    value={lessonCaption}
-                    onChange={(e) => setLessonCaption(e.target.value)}
-                    placeholder="สรุปสั้นๆ ว่าคลิปนี้สอนอะไร..."
-                  />
-                </div>
-              )}
-              {course.format !== "TIKTOK" && (
-                <div>
-                  <Label>เนื้อหา</Label>
-                  <TiptapEditor value={lessonContent} onChange={setLessonContent} />
-                </div>
-              )}
-              {course.format === "TIKTOK" && course.status === "PUBLISHED" && (
+              <div>
+                <Label>คำบรรยายคลิป (แสดงบนฟีด)</Label>
+                <Input
+                  value={lessonCaption}
+                  onChange={(e) => setLessonCaption(e.target.value)}
+                  placeholder="สรุปสั้นๆ ว่าคลิปนี้สอนอะไร..."
+                />
+              </div>
+              <div>
+                <Label>ระยะเวลา (วินาที)</Label>
+                <Input
+                  type="number"
+                  min={0}
+                  value={lessonDuration}
+                  onChange={(e) => setLessonDuration(e.target.value)}
+                  placeholder="เช่น 45"
+                />
+              </div>
+              {course.status === "PUBLISHED" && (
                 <Link
                   href={`/classes/${course.slug}`}
                   className="inline-block text-sm font-medium text-brand-600 hover:underline"
                 >
-                  ดูตัวอย่างฟีด TikTok →
+                  ดูตัวอย่างฟีด →
                 </Link>
               )}
               <Button onClick={saveLesson} disabled={savingLesson}>
-                <Save size={16} /> {savingLesson ? "กำลังบันทึก..." : "บันทึกบทเรียน"}
+                <Save size={16} /> {savingLesson ? "กำลังบันทึก..." : "บันทึกคลิป"}
               </Button>
             </div>
           ) : (
             <div className="flex h-full min-h-[300px] items-center justify-center text-slate-400">
-              เลือกบทเรียนทางซ้าย หรือเพิ่มบทเรียนใหม่เพื่อแก้ไขเนื้อหา
+              เลือกคลิปทางซ้าย หรือเพิ่มคลิปใหม่เพื่อแก้ไขเนื้อหา
             </div>
           )}
         </Card>

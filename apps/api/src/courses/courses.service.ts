@@ -21,11 +21,10 @@ export class CoursesService {
   constructor(private readonly prisma: PrismaService) {}
 
   /** Public catalog: published courses only. */
-  listPublished(format?: "STANDARD" | "TIKTOK") {
+  listPublished() {
     return this.prisma.course.findMany({
       where: {
         status: "PUBLISHED",
-        ...(format ? { format } : {}),
       },
       orderBy: { createdAt: "desc" },
       include: {
@@ -35,12 +34,12 @@ export class CoursesService {
     });
   }
 
-  /** Published TikTok-style short courses. */
+  /** Alias kept for backward-compatible routes; all courses are TikTok classes now. */
   listTiktok() {
-    return this.listPublished("TIKTOK");
+    return this.listPublished();
   }
 
-  /** Flat clip feed for a TikTok course (video lessons only). */
+  /** Flat clip feed for a TikTok class (video lessons only). */
   async getTiktokFeed(slug: string) {
     const course = await this.prisma.course.findUnique({
       where: { slug },
@@ -49,7 +48,6 @@ export class CoursesService {
         slug: true,
         title: true,
         description: true,
-        format: true,
         status: true,
         coverImageUrl: true,
         instructor: { select: { id: true, displayName: true } },
@@ -75,9 +73,6 @@ export class CoursesService {
     });
     if (!course || course.status !== "PUBLISHED") {
       throw new NotFoundException("ไม่พบคลาส");
-    }
-    if (course.format !== "TIKTOK") {
-      throw new NotFoundException("คอร์สนี้ไม่ใช่คลาส TikTok");
     }
 
     const clips = course.sections.flatMap((s) => s.lessons).filter((l) => l.videoUrl);
@@ -152,7 +147,6 @@ export class CoursesService {
         description: dto.description,
         coverImageUrl: dto.coverImageUrl,
         priceCents: dto.priceCents ?? 0,
-        format: dto.format ?? "STANDARD",
         slug,
         instructorId: user.id,
       },
@@ -168,7 +162,6 @@ export class CoursesService {
         description: dto.description,
         coverImageUrl: dto.coverImageUrl,
         priceCents: dto.priceCents,
-        format: dto.format,
       },
     });
   }

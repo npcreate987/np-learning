@@ -1,61 +1,106 @@
 import Link from "next/link";
-import { BookOpen, Rocket, Smartphone } from "lucide-react";
+import { BookOpen, CheckCircle2, ClipboardList, Smartphone } from "lucide-react";
 import { Button, Card } from "@/components/ui";
 
 const features = [
   {
     icon: BookOpen,
-    title: "เนื้อหาจัดเต็ม",
-    desc: "คอร์สหลากหลายพร้อมบทเรียนและเนื้อหาแบบ rich text ครบถ้วน",
+    title: "คลาสเป็นคลิปสั้น",
+    desc: "เรียนทีละคลิป กระชับ เข้าใจง่าย กลับมาเลื่อนต่อได้ทันทีที่ค้างไว้",
   },
   {
     icon: Smartphone,
-    title: "เรียนได้ทุกที่",
-    desc: "ใช้งานได้ลื่นทั้งมือถือและเดสก์ท็อป ติดตั้งเป็นแอป (PWA) ได้",
+    title: "เรียนแบบแนวตั้งบนมือถือ",
+    desc: "คลิปวิดีโอแนวตั้ง เลื่อนดูแบบฟีด TikTok เหมาะกับคนที่เรียนระหว่างวัน",
   },
   {
-    icon: Rocket,
-    title: "ติดตามความคืบหน้า",
-    desc: "บันทึกบทเรียนที่เรียนจบ พร้อมแถบความคืบหน้าของแต่ละคอร์ส",
+    icon: ClipboardList,
+    title: "มีทีมงานติดตาม",
+    desc: "ฟอร์มสนใจเรียนช่วยให้ทีมงานติดต่อกลับและแนะนำคลาสที่เหมาะกับเป้าหมาย",
   },
+];
+
+const stats = [
+  { value: "Mobile first", label: "เรียนบนมือถือได้ลื่น" },
+  { value: "Certificate", label: "ทำแบบทดสอบและรับใบประกาศ" },
+  { value: "Community", label: "พูดคุยและเรียนรู้ร่วมกัน" },
 ];
 
 export default function HomePage() {
   return (
-    <div className="space-y-16 py-6">
-      <section className="rounded-3xl bg-gradient-to-br from-brand-600 to-brand-800 px-6 py-16 text-center text-white sm:px-12">
-        <h1 className="mx-auto max-w-3xl text-3xl font-extrabold leading-tight sm:text-5xl">
-          เรียนรู้ทักษะใหม่ได้ทุกที่ ทุกเวลา
-        </h1>
-        <p className="mx-auto mt-4 max-w-xl text-base text-brand-100 sm:text-lg">
-          แพลตฟอร์มเรียนออนไลน์ที่รวมคอร์สหลากหลาย พร้อมติดตามความคืบหน้าการเรียนได้อย่างง่ายดาย
-        </p>
-        <div className="mt-8 flex flex-wrap justify-center gap-3">
-          <Link href="/courses">
-            <Button size="lg" variant="secondary">
-              เริ่มเรียนเลย
-            </Button>
-          </Link>
-          <Link href="/signup">
-            <Button
-              size="lg"
-              variant="outline"
-              className="border-white/40 bg-white/10 text-white hover:bg-white/20"
-            >
-              สมัครเรียน
-            </Button>
-          </Link>
+    <div className="space-y-14 py-4">
+      <section className="overflow-hidden rounded-[2rem] border border-slate-200/80 bg-white shadow-[0_24px_70px_rgba(23,20,47,0.08)]">
+        <div className="grid gap-8 p-6 sm:p-10 lg:grid-cols-[1.08fr_0.92fr] lg:p-12">
+          <div className="flex flex-col justify-center">
+            <span className="mb-5 inline-flex w-fit rounded-full bg-brand-50 px-4 py-2 text-sm font-medium text-brand-800">
+              NP Learning Platform
+            </span>
+            <h1 className="max-w-3xl text-4xl font-bold leading-tight tracking-tight text-ink sm:text-5xl">
+              เรียนรู้ผ่านคลิปการสอนสั้น เลื่อนดูแบบฟีด
+            </h1>
+            <p className="mt-5 max-w-2xl text-base leading-8 text-slate-600 sm:text-lg">
+              รวมคลาสคลิปสั้นเกี่ยวกับ TikTok และการตลาดดิจิทัล พร้อมแบบทดสอบ ใบประกาศ
+              และระบบติดตามผู้เรียนไว้ในที่เดียว เปิดดูได้ทั้งวิดีโอ YouTube และ .mp4
+            </p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link href="/interest">
+                <Button size="lg">สนใจเรียน / ให้ติดต่อกลับ</Button>
+              </Link>
+              <Link href="/classes">
+                <Button size="lg" variant="outline">
+                  ดูคลาสทั้งหมด
+                </Button>
+              </Link>
+            </div>
+            <div className="mt-8 flex flex-wrap gap-4 text-sm text-slate-600">
+              {["สมัครเรียนง่าย", "เรียนต่อได้ทุกอุปกรณ์", "มีประวัติและใบประกาศ"].map((item) => (
+                <span key={item} className="inline-flex items-center gap-2">
+                  <CheckCircle2 size={16} className="text-gold-600" />
+                  {item}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          <div className="relative rounded-[1.75rem] bg-cream-100 p-5">
+            <div className="rounded-[1.35rem] bg-ink p-5 text-white">
+              <p className="text-sm text-slate-300">Course Journey</p>
+              <h2 className="mt-2 text-2xl font-semibold tracking-tight">
+                เริ่มเรียนวันนี้
+              </h2>
+              <div className="mt-6 space-y-3">
+                {["เลือกคลาสที่สนใจ", "เลื่อนดูคลิปสั้นแนวตั้ง", "ทำแบบทดสอบและรับใบประกาศ"].map(
+                  (step, index) => (
+                    <div key={step} className="flex items-center gap-3 rounded-2xl bg-white/10 p-4">
+                      <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-sm font-semibold text-ink">
+                        {index + 1}
+                      </span>
+                      <span className="text-sm text-slate-100">{step}</span>
+                    </div>
+                  ),
+                )}
+              </div>
+            </div>
+            <div className="mt-4 grid grid-cols-3 gap-3">
+              {stats.map((item) => (
+                <div key={item.value} className="rounded-2xl bg-white p-4">
+                  <p className="text-sm font-semibold text-ink">{item.value}</p>
+                  <p className="mt-1 text-xs leading-5 text-slate-500">{item.label}</p>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </section>
 
       <section className="grid gap-6 sm:grid-cols-3">
         {features.map((f) => (
           <Card key={f.title} className="p-6">
-            <span className="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
+            <span className="mb-5 inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-brand-50 text-brand-700">
               <f.icon size={22} />
             </span>
-            <h3 className="text-lg font-semibold text-slate-900">{f.title}</h3>
-            <p className="mt-2 text-sm text-slate-600">{f.desc}</p>
+            <h3 className="text-lg font-semibold text-ink">{f.title}</h3>
+            <p className="mt-2 text-sm leading-6 text-slate-600">{f.desc}</p>
           </Card>
         ))}
       </section>

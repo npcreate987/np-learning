@@ -83,8 +83,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
       audience: "authenticated",
-      // Only enforce issuer when verifying real Supabase tokens.
-      ...(supabaseUrl ? { issuer: `${supabaseUrl}/auth/v1` } : {}),
+      // Only enforce issuer when verifying real Supabase tokens. Dev tokens
+      // are HS256 signed with a shared secret and don't carry an `iss` claim,
+      // so skip the issuer check in dev mode (otherwise every dev token is
+      // rejected with 401).
+      ...(!devAuth && supabaseUrl ? { issuer: `${supabaseUrl}/auth/v1` } : {}),
       // Supabase signs new tokens with ES256 (asymmetric, via JWKS); legacy
       // and dev tokens use HS256 with a shared secret.
       algorithms: ["ES256", "RS256", "HS256"],

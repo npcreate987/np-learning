@@ -9,10 +9,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[#f4f5fa]">
+    <div className="min-h-screen bg-cream-50">
       {/* Desktop sidebar */}
       <aside className="fixed inset-y-0 left-0 hidden w-64 p-3 lg:block">
-        <div className="h-full overflow-hidden rounded-3xl">
+        <div className="h-full overflow-hidden rounded-[2rem] shadow-[0_18px_60px_rgba(23,20,47,0.14)]">
           <EduSidebar />
         </div>
       </aside>
@@ -26,7 +26,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       >
         <div
           className={cn(
-            "absolute inset-0 bg-black/40 transition-opacity",
+            "absolute inset-0 bg-ink/45 transition-opacity",
             open ? "opacity-100" : "opacity-0",
           )}
           onClick={() => setOpen(false)}
@@ -42,11 +42,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </div>
 
       {/* Mobile top bar */}
-      <div className="sticky top-0 z-30 flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 lg:hidden">
-        <span className="font-bold text-ink">Eduplex</span>
+      <div className="sticky top-0 z-30 flex items-center justify-between border-b border-slate-200/80 bg-cream-50/95 px-4 py-3 backdrop-blur lg:hidden">
+        <span className="font-bold tracking-tight text-ink">NP Learning</span>
         <button
           onClick={() => setOpen((v) => !v)}
-          className="rounded-lg p-2 text-ink hover:bg-slate-100"
+          className="rounded-full p-2 text-ink hover:bg-white"
           aria-label="เมนู"
         >
           {open ? <X size={22} /> : <Menu size={22} />}

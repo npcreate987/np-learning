@@ -78,7 +78,7 @@ export default function AiTutorPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3">
-        <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-lime text-ink">
+        <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gold-400 text-ink">
           <Bot size={22} />
         </span>
         <div>
@@ -125,7 +125,7 @@ export default function AiTutorPage() {
                 <span
                   className={cn(
                     "flex h-8 w-8 shrink-0 items-center justify-center rounded-full",
-                    m.role === "user" ? "bg-brand-600 text-white" : "bg-ink text-lime",
+                    m.role === "user" ? "bg-brand-700 text-white" : "bg-ink text-gold-400",
                   )}
                 >
                   {m.role === "user" ? <User size={16} /> : <Bot size={16} />}
@@ -146,7 +146,7 @@ export default function AiTutorPage() {
 
           {loading && (
             <div className="flex gap-3">
-              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-ink text-lime">
+              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-ink text-gold-400">
                 <Bot size={16} />
               </span>
               <div className="flex items-center gap-1 rounded-2xl rounded-tl-sm bg-slate-100 px-4 py-3">
@@ -181,7 +181,7 @@ export default function AiTutorPage() {
           <button
             type="submit"
             disabled={loading || !input.trim()}
-            className="flex h-11 w-11 items-center justify-center rounded-full bg-ink text-lime transition hover:bg-ink-800 disabled:opacity-40"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-ink text-gold-400 transition hover:bg-ink-800 disabled:opacity-40"
             aria-label="ส่ง"
           >
             <Send size={18} />

@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Patch, UseGuards } from "@nestjs/common";
-import { IsIn, IsOptional, IsString, MaxLength } from "class-validator";
+import { IsBoolean, IsIn, IsOptional, IsString, MaxLength } from "class-validator";
 import { PrismaService } from "../prisma/prisma.service";
 import { JwtAuthGuard } from "./jwt-auth.guard";
 import { CurrentUser } from "./current-user.decorator";
@@ -10,6 +10,20 @@ class UpdateProfileDto {
   @IsString()
   @MaxLength(120)
   displayName?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(512)
+  avatarUrl?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(32)
+  phone?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  notifyEmail?: boolean;
 
   // Allow a user to opt-in to becoming an instructor in this MVP.
   @IsOptional()
@@ -33,6 +47,9 @@ export class AuthController {
       where: { id: user.id },
       data: {
         displayName: dto.displayName,
+        avatarUrl: dto.avatarUrl,
+        phone: dto.phone,
+        notifyEmail: dto.notifyEmail,
         role: dto.role,
       },
     });

@@ -34,12 +34,12 @@ export default function CertificatesPage() {
   return (
     <div className="space-y-5">
       <div className="flex items-center gap-3">
-        <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-lime text-ink">
+        <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gold-400 text-ink">
           <Award size={22} />
         </span>
         <div>
           <h1 className="text-2xl font-bold text-ink">ใบประกาศนียบัตรของฉัน</h1>
-          <p className="text-sm text-slate-500">ใบประกาศที่ได้รับเมื่อสอบผ่านแบบทดสอบท้ายคอร์ส</p>
+          <p className="text-sm text-slate-500">ใบประกาศที่ได้รับเมื่อสอบผ่านแบบทดสอบท้ายคลาส</p>
         </div>
       </div>
 
@@ -56,7 +56,7 @@ export default function CertificatesPage() {
         </div>
       ) : certs.length === 0 ? (
         <div className="rounded-3xl bg-white p-10 text-center text-sm text-slate-500 shadow-sm">
-          ยังไม่มีใบประกาศ — เรียนจบคอร์สแล้วทำแบบทดสอบให้ผ่านเพื่อรับใบประกาศ
+          ยังไม่มีใบประกาศ — เรียนจบคลาสแล้วทำแบบทดสอบให้ผ่านเพื่อรับใบประกาศ
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2">

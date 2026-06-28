@@ -32,15 +32,11 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "devnext2/types/**/*.ts",
-    "devnext3/types/**/*.ts",
-    "devnext4/types/**/*.ts",
-    "devnext5/types/**/*.ts",
-    "devnext6/types/**/*.ts",
-    "next-env.d.ts",
-    "devnext7/types/**/*.ts"
+    "next-env.d.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "capacitor.config.ts",
+    "capacitor"
   ]
 }

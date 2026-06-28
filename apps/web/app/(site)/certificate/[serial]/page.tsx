@@ -56,7 +56,7 @@ export default function CertificatePage() {
       <div className="relative overflow-hidden rounded-3xl border-8 border-double border-ink bg-white p-10 text-center shadow-lg print:border-ink print:shadow-none">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(190,242,100,0.15),transparent_60%)]" />
         <div className="relative">
-          <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-lime text-ink">
+          <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gold-400 text-ink">
             <Award size={32} />
           </span>
           <p className="mt-6 text-sm font-semibold uppercase tracking-[0.3em] text-slate-400">

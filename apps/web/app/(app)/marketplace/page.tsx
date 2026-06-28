@@ -7,9 +7,9 @@ export default function MarketplacePage() {
   return (
     <ComingSoon
       title="Marketplace"
-      description="ตลาดซื้อขาย Template, Prompt Pack, Ebook และ AI Tools"
+      description="ตลาดซื้อขาย Template, คู่มือ, Ebook และเครื่องมือเสริมสำหรับการเรียน"
       icon={Store}
-      features={["53 Prompt Pack", "AI Tools", "Templates", "Ebook"]}
+      features={["Template", "คู่มือใช้งาน", "Ebook", "เครื่องมือเสริม"]}
     />
   );
 }

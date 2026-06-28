@@ -96,7 +96,7 @@ export default function CommunityPage() {
   return (
     <div className="mx-auto max-w-2xl space-y-5">
       <div className="flex items-center gap-3">
-        <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-lime text-ink">
+        <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gold-400 text-ink">
           <Users size={22} />
         </span>
         <div>
@@ -124,7 +124,7 @@ export default function CommunityPage() {
             <button
               type="submit"
               disabled={posting || !content.trim()}
-              className="inline-flex items-center gap-2 rounded-full bg-ink px-5 py-2 text-sm font-semibold text-lime transition hover:bg-ink-800 disabled:opacity-40"
+              className="inline-flex items-center gap-2 rounded-full bg-ink px-5 py-2 text-sm font-semibold text-gold-400 transition hover:bg-ink-800 disabled:opacity-40"
             >
               {posting ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
               โพสต์
@@ -273,7 +273,7 @@ function PostCard({
   return (
     <article className="rounded-3xl bg-white p-5 shadow-sm">
       <div className="flex items-start gap-3">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-ink font-semibold text-lime">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-ink font-semibold text-gold-400">
           {initial(post.author.displayName)}
         </span>
         <div className="min-w-0 flex-1">
@@ -353,7 +353,7 @@ function PostCard({
                   <button
                     type="submit"
                     disabled={commentBusy || !newComment.trim()}
-                    className="flex h-9 w-9 items-center justify-center rounded-full bg-ink text-lime disabled:opacity-40"
+                    className="flex h-9 w-9 items-center justify-center rounded-full bg-ink text-gold-400 disabled:opacity-40"
                     aria-label="ส่งคอมเมนต์"
                   >
                     <Send size={15} />

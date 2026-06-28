@@ -4,6 +4,7 @@ import {
   createContext,
   useContext,
   useEffect,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -75,6 +76,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       sub.subscription.unsubscribe();
     };
   }, []);
+
+  // Apply a pending referral code (saved by the signup page from ?ref=...) once,
+  // right after the profile first loads and only if the user isn't already
+  // linked to a referrer. The guard prevents duplicate attempts per session.
+  const referralAppliedRef = useRef(false);
+  useEffect(() => {
+    if (!profile || profile.referredById || referralAppliedRef.current) return;
+    const code =
+      typeof window !== "undefined" ? localStorage.getItem("np_ref_code") : null;
+    if (!code) return;
+    referralAppliedRef.current = true;
+    api
+      .post("/referral/apply", { code }, true)
+      .then(() => loadProfile(session))
+      .catch(() => {
+        /* invalid/expired code — drop it below so we don't retry */
+      })
+      .finally(() => {
+        if (typeof window !== "undefined") localStorage.removeItem("np_ref_code");
+      });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profile]);
 
   const value: AuthContextValue = {
     session,

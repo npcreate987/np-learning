@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/components/auth-provider";
 import { ServiceWorkerRegister } from "@/components/service-worker-register";
+import { NativeBridge } from "@/components/native-bridge";
 
 const inter = Inter({
   subsets: ["latin", "latin-ext"],
@@ -15,7 +16,7 @@ export const metadata: Metadata = {
     default: "NP Learning - เรียนออนไลน์",
     template: "%s | NP Learning",
   },
-  description: "แพลตฟอร์มเรียนออนไลน์ สร้างและเรียนคอร์สได้ทุกที่ทุกเวลา",
+  description: "แพลตฟอร์มเรียนออนไลน์ สร้างและเรียนคลาสได้ทุกที่ทุกเวลา",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
@@ -38,6 +39,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <AuthProvider>
           {children}
           <ServiceWorkerRegister />
+          <NativeBridge />
         </AuthProvider>
       </body>
     </html>

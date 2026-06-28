@@ -1,19 +1,29 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { Button, Card, Input, Label } from "@/components/ui";
 
-export default function SignupPage() {
+function SignupForm() {
   const router = useRouter();
+  const params = useSearchParams();
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  // Capture an affiliate referral code from the URL so the auth provider can
+  // link this new account to its referrer right after the first login.
+  useEffect(() => {
+    const ref = params.get("ref");
+    if (ref && typeof window !== "undefined") {
+      localStorage.setItem("np_ref_code", ref.trim().toUpperCase());
+    }
+  }, [params]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -31,7 +41,7 @@ export default function SignupPage() {
       return;
     }
     if (data.session) {
-      router.push("/my-courses");
+      router.push("/dashboard");
     } else {
       setInfo("สมัครสำเร็จ! กรุณาตรวจสอบอีเมลเพื่อยืนยันบัญชี แล้วเข้าสู่ระบบ");
     }
@@ -92,5 +102,13 @@ export default function SignupPage() {
         </p>
       </Card>
     </div>
+  );
+}
+
+export default function SignupPage() {
+  return (
+    <Suspense fallback={<div className="mx-auto max-w-md py-10"><Card className="p-8"><p className="text-center text-sm text-slate-500">กำลังโหลด...</p></Card></div>}>
+      <SignupForm />
+    </Suspense>
   );
 }

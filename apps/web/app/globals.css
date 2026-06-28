@@ -3,8 +3,8 @@
 @tailwind utilities;
 
 :root {
-  --background: 255 255 255;
-  --foreground: 15 23 42;
+  --background: 251 250 247;
+  --foreground: 23 20 47;
 }
 
 html {
@@ -12,7 +12,9 @@ html {
 }
 
 body {
-  background-color: rgb(248 250 252);
+  background:
+    radial-gradient(circle at top left, rgba(124, 58, 237, 0.06), transparent 34rem),
+    rgb(var(--background));
   color: rgb(var(--foreground));
   -webkit-font-smoothing: antialiased;
 }
@@ -48,7 +50,7 @@ body {
   margin: 0.5rem 0;
 }
 .prose-content :where(blockquote) {
-  border-left: 3px solid rgb(199 210 254);
+  border-left: 3px solid rgb(196 154 74);
   padding-left: 1rem;
   color: rgb(71 85 105);
   margin: 0.75rem 0;
@@ -66,7 +68,7 @@ body {
   font-size: 0.875em;
 }
 .prose-content :where(a) {
-  color: rgb(79 70 229);
+  color: rgb(109 40 217);
   text-decoration: underline;
 }
 

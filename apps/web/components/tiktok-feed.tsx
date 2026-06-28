@@ -2,16 +2,21 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
   Bookmark,
+  FileQuestion,
   Heart,
+  LogIn,
   MessageCircle,
+  Play,
   Share2,
   Sparkles,
 } from "lucide-react";
-import { api } from "@/lib/api";
-import { VerticalVideoPlayer } from "./vertical-video-player";
+import { api, ApiError } from "@/lib/api";
+import { useAuth } from "@/components/auth-provider";
+import { FeedVideoPlayer } from "./feed-video-player";
 import { cn } from "@/lib/utils";
 
 interface Clip {
@@ -23,21 +28,53 @@ interface Clip {
 }
 
 interface Feed {
+  id: string;
   slug: string;
   title: string;
+  description: string | null;
   instructor: { displayName: string | null };
   clips: Clip[];
 }
 
+function fmtDuration(s: number | null): string {
+  if (!s || s <= 0) return "";
+  const m = Math.floor(s / 60);
+  const sec = s % 60;
+  return `${m}:${sec.toString().padStart(2, "0")}`;
+}
+
 export function TiktokFeed({ slug }: { slug: string }) {
+  const router = useRouter();
+  const { session } = useAuth();
   const [feed, setFeed] = useState<Feed | null>(null);
   const [activeIdx, setActiveIdx] = useState(0);
   const [liked, setLiked] = useState<Set<string>>(new Set());
+  const [enrolled, setEnrolled] = useState<boolean | null>(null);
+  const [enrolling, setEnrolling] = useState(false);
+  const [hasQuiz, setHasQuiz] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     api.get<Feed>(`/courses/slug/${slug}/tiktok-feed`).then(setFeed).catch(() => setFeed(null));
   }, [slug]);
+
+  // Check enrollment + quiz presence once we have the course id and a session.
+  useEffect(() => {
+    if (!feed?.id) return;
+    if (session) {
+      api
+        .get<{ enrolled: boolean }>(`/enrollments/check/${feed.id}`, true)
+        .then((r) => setEnrolled(r.enrolled))
+        .catch(() => setEnrolled(false));
+      api
+        .get<{ questions: unknown[] } | null>(`/quizzes/course/${feed.id}`, true)
+        .then((q) => setHasQuiz(Boolean(q && q.questions.length > 0)))
+        .catch(() => setHasQuiz(false));
+    } else {
+      setEnrolled(false);
+      setHasQuiz(false);
+    }
+  }, [feed?.id, session]);
 
   const onScroll = useCallback(() => {
     const el = containerRef.current;
@@ -46,6 +83,23 @@ export function TiktokFeed({ slug }: { slug: string }) {
     const idx = Math.round(el.scrollTop / h);
     setActiveIdx(idx);
   }, []);
+
+  async function startLearning() {
+    if (!feed) return;
+    if (!session) {
+      router.push("/login");
+      return;
+    }
+    setEnrolling(true);
+    try {
+      await api.post("/enrollments", { courseId: feed.id });
+      setEnrolled(true);
+    } catch (e) {
+      if (e instanceof ApiError) alert(e.message);
+    } finally {
+      setEnrolling(false);
+    }
+  }
 
   if (!feed) {
     return (
@@ -60,7 +114,7 @@ export function TiktokFeed({ slug }: { slug: string }) {
       <div className="flex h-[80vh] flex-col items-center justify-center gap-3 text-slate-500">
         <p>ยังไม่มีคลิปในคลาสนี้</p>
         <Link href="/classes" className="text-brand-600 hover:underline">
-          กลับหน้าคลาส TikTok
+          กลับหน้าคลาสทั้งหมด
         </Link>
       </div>
     );
@@ -72,7 +126,7 @@ export function TiktokFeed({ slug }: { slug: string }) {
         href="/classes"
         className="absolute left-3 top-3 z-20 flex items-center gap-1 rounded-full bg-black/50 px-3 py-1.5 text-sm text-white backdrop-blur"
       >
-        <ArrowLeft size={16} /> คลาส TikTok
+        <ArrowLeft size={16} /> คลาสทั้งหมด
       </Link>
 
       <div
@@ -87,11 +141,11 @@ export function TiktokFeed({ slug }: { slug: string }) {
             className="relative h-full w-full shrink-0 snap-start snap-always"
           >
             {clip.videoUrl && (
-              <VerticalVideoPlayer url={clip.videoUrl} active={i === activeIdx} />
+              <FeedVideoPlayer url={clip.videoUrl} active={i === activeIdx} />
             )}
 
             {/* gradient overlay */}
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30" />
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/90 via-transparent to-black/30" />
 
             {/* right actions */}
             <div className="absolute bottom-28 right-3 z-10 flex flex-col items-center gap-5">
@@ -143,17 +197,54 @@ export function TiktokFeed({ slug }: { slug: string }) {
               {clip.caption && (
                 <p className="mt-1 line-clamp-2 text-sm text-white/90">{clip.caption}</p>
               )}
-              <Link
-                href="/ai-tutor"
-                className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-lime px-3 py-1.5 text-xs font-semibold text-ink"
-              >
-                <Sparkles size={14} /> ถาม AI เกี่ยวกับคลิปนี้
-              </Link>
+
+              {enrolled ? (
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  <Link
+                    href="/ai-tutor"
+                    className="inline-flex items-center gap-1.5 rounded-full bg-gold-400 px-3 py-1.5 text-xs font-semibold text-ink"
+                  >
+                    <Sparkles size={14} /> ถาม AI เกี่ยวกับคลิปนี้
+                  </Link>
+                  {hasQuiz && (
+                    <Link
+                      href={`/quiz/${feed.id}`}
+                      className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur"
+                    >
+                      <FileQuestion size={14} /> แบบทดสอบท้ายคลาส
+                    </Link>
+                  )}
+                </div>
+              ) : (
+                <button
+                  onClick={startLearning}
+                  disabled={enrolling}
+                  className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-gold-400 px-4 py-2 text-xs font-bold text-ink transition hover:bg-gold-300 disabled:opacity-60"
+                >
+                  {session ? (
+                    <>
+                      <Play size={14} fill="currentColor" />
+                      {enrolling ? "กำลังเริ่ม..." : "เริ่มเรียน"}
+                    </>
+                  ) : (
+                    <>
+                      <LogIn size={14} /> เข้าสู่ระบบเพื่อเริ่มเรียน
+                    </>
+                  )}
+                </button>
+              )}
             </div>
 
-            {/* clip counter */}
-            <div className="absolute right-3 top-14 z-10 rounded-full bg-black/40 px-2 py-0.5 text-xs text-white">
-              {i + 1}/{feed.clips.length}
+            {/* clip counter + duration */}
+            <div className="absolute right-3 top-14 z-10 flex items-center gap-2">
+              {fmtDuration(clip.durationSeconds) && (
+                <span className="rounded-full bg-black/40 px-2 py-0.5 text-xs text-white">
+                  {fmtDuration(clip.durationSeconds)}
+                </span>
+              )}
+              <span className="rounded-full bg-black/40 px-2 py-0.5 text-xs text-white">
+                {i + 1}/{feed.clips.length}
+              </span>
             </div>
           </section>
         ))}

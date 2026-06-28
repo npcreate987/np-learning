@@ -118,14 +118,14 @@ export default function QuizManagePage() {
         href={`/studio/courses/${id}`}
         className="mb-4 inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-800"
       >
-        <ArrowLeft size={16} /> กลับไปแก้ไขคอร์ส
+        <ArrowLeft size={16} /> กลับไปแก้ไขคลาส
       </Link>
 
-      <h1 className="text-2xl font-bold text-slate-900">แบบทดสอบท้ายคอร์ส</h1>
+      <h1 className="text-2xl font-bold text-slate-900">แบบทดสอบท้ายคลาส</h1>
 
       {!quiz ? (
         <Card className="mt-6 p-8 text-center">
-          <p className="text-slate-500">คอร์สนี้ยังไม่มีแบบทดสอบ</p>
+          <p className="text-slate-500">คลาสนี้ยังไม่มีแบบทดสอบ</p>
           <Button className="mt-4" onClick={createQuiz}>
             <Plus size={16} /> สร้างแบบทดสอบ
           </Button>

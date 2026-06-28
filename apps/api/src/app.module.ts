@@ -10,6 +10,11 @@ import { UploadsModule } from "./uploads/uploads.module";
 import { AiModule } from "./ai/ai.module";
 import { CommunityModule } from "./community/community.module";
 import { QuizModule } from "./quiz/quiz.module";
+import { LearningInterestModule } from "./learning-interest/learning-interest.module";
+import { NotificationsModule } from "./notifications/notifications.module";
+import { DeviceTokensModule } from "./device-tokens/device-tokens.module";
+import { ReferralModule } from "./referral/referral.module";
+import { AdminModule } from "./admin/admin.module";
 import { HealthController } from "./health.controller";
 
 @Module({
@@ -25,6 +30,11 @@ import { HealthController } from "./health.controller";
     AiModule,
     CommunityModule,
     QuizModule,
+    LearningInterestModule,
+    NotificationsModule,
+    DeviceTokensModule,
+    ReferralModule,
+    AdminModule,
   ],
   controllers: [HealthController],
 })

@@ -17,7 +17,7 @@ const stats: {
   icon: LucideIcon;
   tint: string;
 }[] = [
-  { label: "ยอดขายเดือนนี้", value: "฿89,500", delta: "+12.4%", icon: Wallet, tint: "bg-lime text-ink" },
+  { label: "ยอดขายเดือนนี้", value: "฿89,500", delta: "+12.4%", icon: Wallet, tint: "bg-gold-400 text-ink" },
   { label: "สมาชิกทั้งหมด", value: "2,580", delta: "+8.1%", icon: Users, tint: "bg-rose-100 text-rose-600" },
   { label: "Active วันนี้", value: "425", delta: "+3.2%", icon: TrendingUp, tint: "bg-sky-100 text-sky-600" },
   { label: "MRR", value: "฿142,300", delta: "+5.7%", icon: BookOpen, tint: "bg-violet-100 text-violet-600" },
@@ -77,7 +77,7 @@ export default function CreatorPage() {
             {dailySales.map((v, i) => (
               <div
                 key={i}
-                className="flex-1 rounded-t-lg bg-ink/90 transition-all hover:bg-lime-600"
+                className="flex-1 rounded-t-lg bg-ink/90 transition-all hover:bg-gold-600"
                 style={{ height: `${(v / maxSale) * 100}%` }}
                 title={`฿${(v * 1000).toLocaleString()}`}
               />
@@ -86,7 +86,7 @@ export default function CreatorPage() {
         </div>
 
         <div className="rounded-3xl bg-white p-5 shadow-sm">
-          <h2 className="mb-4 font-semibold text-ink">คอร์สขายดี</h2>
+          <h2 className="mb-4 font-semibold text-ink">คลาสยอดนิยม</h2>
           <div className="space-y-3">
             {topCourses.map((c, i) => (
               <div key={c.title} className="flex items-center gap-3">

@@ -6,8 +6,107 @@ export interface Profile {
   id: string;
   email: string;
   displayName: string | null;
+  avatarUrl: string | null;
+  phone: string | null;
+  notifyEmail: boolean;
+  referralCode: string | null;
+  referredById: string | null;
   role: Role;
   createdAt: string;
+  updatedAt: string;
+}
+
+export type NotificationType =
+  | "welcome"
+  | "referral"
+  | "info"
+  | "certificate";
+
+export interface Notification {
+  id: string;
+  userId: string;
+  type: NotificationType;
+  title: string;
+  body: string;
+  payload: Record<string, unknown>;
+  read: boolean;
+  createdAt: string;
+}
+
+export interface ReferralMe {
+  referralCode: string;
+  referredBy: { referralCode: string; displayName: string | null } | null;
+  stats: { referrals: number; enrolled: number };
+  recentReferrals: {
+    id: string;
+    displayName: string | null;
+    email: string;
+    createdAt: string;
+  }[];
+}
+
+/* ----------------------------- Admin ----------------------------- */
+
+export interface AdminStats {
+  users: { total: number; students: number; instructors: number; admins: number };
+  courses: { total: number; published: number; draft: number };
+  enrollments: number;
+  certificates: number;
+  leads: {
+    total: number;
+    pending: number;
+    contacted: number;
+    enrolled: number;
+    cancelled: number;
+  };
+  recentLeads: {
+    id: string;
+    fullName: string;
+    phone: string;
+    status: string;
+    createdAt: string;
+    course: { title: string } | null;
+  }[];
+  recentEnrollments: {
+    id: string;
+    createdAt: string;
+    user: { email: string; displayName: string | null };
+    course: { title: string };
+  }[];
+}
+
+export interface AdminUser {
+  id: string;
+  email: string;
+  displayName: string | null;
+  role: Role;
+  createdAt: string;
+  _count: { enrollments: number; referrals: number };
+}
+
+export interface AdminCourse {
+  id: string;
+  slug: string;
+  title: string;
+  status: CourseStatus;
+  priceCents: number;
+  createdAt: string;
+  instructor: { id: string; displayName: string | null; email: string };
+  _count: { sections: number; enrollments: number };
+}
+
+export interface AdminPost {
+  id: string;
+  content: string;
+  createdAt: string;
+  author: { id: string; displayName: string | null; email: string };
+  _count: { comments: number; likes: number };
+}
+
+export type BroadcastAudience = "ALL" | "STUDENT" | "INSTRUCTOR";
+
+export interface BroadcastResult {
+  sent: number;
 }
 
 export interface Lesson {

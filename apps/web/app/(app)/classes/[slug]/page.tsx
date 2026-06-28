@@ -1,6 +1,6 @@
 import { TiktokFeed } from "@/components/tiktok-feed";
 
-export const metadata = { title: "คลาส TikTok" };
+export const metadata = { title: "คลาส" };
 
 export default async function ClassFeedPage({
   params,

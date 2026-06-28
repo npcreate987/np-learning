@@ -11,7 +11,6 @@ interface TiktokCourse {
   title: string;
   description: string | null;
   coverImageUrl: string | null;
-  format: string;
   instructor: { displayName: string | null };
   _count: { sections: number; enrollments: number };
 }
@@ -31,13 +30,13 @@ export default function ClassesPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
-        <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-lime text-ink">
+        <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gold-400 text-ink">
           <Smartphone size={22} />
         </span>
         <div>
-          <h1 className="text-2xl font-bold text-ink">คลาส TikTok</h1>
+          <h1 className="text-2xl font-bold text-ink">คลาสทั้งหมด</h1>
           <p className="text-sm text-slate-500">
-            เรียนแบบสั้น กระชับ แนวตั้ง — เลื่อนดูได้เหมือน TikTok
+            คลิปการสอนสั้น กระชับ — เลื่อนดูแบบฟีด ได้ทั้ง YouTube และ .mp4
           </p>
         </div>
       </div>
@@ -50,7 +49,7 @@ export default function ClassesPage() {
         </div>
       ) : courses.length === 0 ? (
         <div className="rounded-3xl bg-white p-10 text-center text-sm text-slate-500 shadow-sm">
-          ยังไม่มีคลาส TikTok — ผู้สอนสามารถสร้างได้จาก Studio
+          ยังไม่มีคลาส — ผู้สอนสามารถสร้างได้จาก Studio
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -69,12 +68,12 @@ export default function ClassesPage() {
                 />
               ) : (
                 <div className="flex h-full items-center justify-center bg-gradient-to-br from-ink to-ink-800">
-                  <Smartphone size={48} className="text-lime/40" />
+                  <Smartphone size={48} className="text-gold-400/45" />
                 </div>
               )}
               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
               <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-                <span className="inline-flex items-center gap-1 rounded-full bg-lime px-2 py-0.5 text-xs font-bold text-ink">
+                <span className="inline-flex items-center gap-1 rounded-full bg-gold-400 px-2 py-0.5 text-xs font-bold text-ink">
                   <Play size={12} fill="currentColor" /> TikTok Class
                 </span>
                 <h2 className="mt-2 text-lg font-bold leading-tight">{c.title}</h2>

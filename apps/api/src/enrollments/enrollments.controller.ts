@@ -28,6 +28,11 @@ export class EnrollmentsController {
     return this.enrollments.enroll(user, dto.courseId);
   }
 
+  @Get("mine/summary")
+  summary(@CurrentUser() user: AuthUser) {
+    return this.enrollments.summary(user);
+  }
+
   @Get("mine")
   mine(@CurrentUser() user: AuthUser) {
     return this.enrollments.listMine(user);

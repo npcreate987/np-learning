@@ -1,5 +1,4 @@
 import {
-  IsIn,
   IsInt,
   IsOptional,
   IsString,
@@ -28,10 +27,6 @@ export class CreateCourseDto {
   @IsInt()
   @Min(0)
   priceCents?: number;
-
-  @IsOptional()
-  @IsIn(["STANDARD", "TIKTOK"])
-  format?: "STANDARD" | "TIKTOK";
 }
 
 export class UpdateCourseDto {
@@ -55,8 +50,4 @@ export class UpdateCourseDto {
   @IsInt()
   @Min(0)
   priceCents?: number;
-
-  @IsOptional()
-  @IsIn(["STANDARD", "TIKTOK"])
-  format?: "STANDARD" | "TIKTOK";
 }

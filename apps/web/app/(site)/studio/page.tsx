@@ -23,7 +23,6 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [newTitle, setNewTitle] = useState("");
-  const [newFormat, setNewFormat] = useState<"STANDARD" | "TIKTOK">("STANDARD");
 
   const isInstructor = profile?.role === "INSTRUCTOR" || profile?.role === "ADMIN";
 
@@ -50,7 +49,6 @@ export default function DashboardPage() {
     try {
       const course = await api.post<{ id: string }>("/courses", {
         title: newTitle,
-        format: newFormat,
       });
       router.push(`/studio/courses/${course.id}`);
     } catch (e) {
@@ -71,8 +69,8 @@ export default function DashboardPage() {
         <p className="mt-2 text-sm text-slate-500">
           ส่วนนี้สำหรับผู้สอนที่ได้รับสิทธิ์จากผู้ดูแลระบบ หากต้องการเปิดสอน กรุณาติดต่อทีมงาน
         </p>
-        <Link href="/courses" className="mt-6 inline-block">
-          <Button>ไปหน้าคอร์สทั้งหมด</Button>
+        <Link href="/classes" className="mt-6 inline-block">
+          <Button>ไปหน้าคลาสทั้งหมด</Button>
         </Link>
       </Card>
     );
@@ -87,53 +85,26 @@ export default function DashboardPage() {
       <Card className="mt-6 p-5">
         <form onSubmit={createCourse} className="space-y-3">
           <div>
-            <Label htmlFor="title">สร้างคอร์สใหม่</Label>
+            <Label htmlFor="title">สร้างคลาสใหม่</Label>
             <Input
               id="title"
               value={newTitle}
               onChange={(e) => setNewTitle(e.target.value)}
-              placeholder="ชื่อคอร์ส เช่น TikTok Marketing 101"
+              placeholder="ชื่อคลาส เช่น TikTok Marketing 101"
             />
-          </div>
-          <div>
-            <Label>รูปแบบคอร์ส</Label>
-            <div className="mt-1 flex gap-2">
-              <button
-                type="button"
-                onClick={() => setNewFormat("STANDARD")}
-                className={`flex-1 rounded-xl border px-3 py-2 text-sm font-medium transition ${
-                  newFormat === "STANDARD"
-                    ? "border-brand-500 bg-brand-50 text-brand-700"
-                    : "border-slate-200 text-slate-600 hover:bg-slate-50"
-                }`}
-              >
-                คอร์สปกติ
-              </button>
-              <button
-                type="button"
-                onClick={() => setNewFormat("TIKTOK")}
-                className={`flex-1 rounded-xl border px-3 py-2 text-sm font-medium transition ${
-                  newFormat === "TIKTOK"
-                    ? "border-lime bg-lime/20 text-ink"
-                    : "border-slate-200 text-slate-600 hover:bg-slate-50"
-                }`}
-              >
-                คลาส TikTok
-              </button>
-            </div>
             <p className="mt-1 text-xs text-slate-400">
-              คลาส TikTok = วิดีโอสั้นแนวตั้ง เลื่อนดูแบบฟีด
+              คลาส = คลิปการสอนสั้น เลื่อนดูแบบฟีด (วิดีโอ YouTube หรือ .mp4 แนวนอน/แนวตั้ง)
             </p>
           </div>
           <Button type="submit" disabled={creating}>
-            <Plus size={18} /> {creating ? "กำลังสร้าง..." : "สร้างคอร์ส"}
+            <Plus size={18} /> {creating ? "กำลังสร้าง..." : "สร้างคลาส"}
           </Button>
         </form>
       </Card>
 
       <div className="mt-8 space-y-3">
         {courses.length === 0 ? (
-          <p className="text-center text-slate-500">ยังไม่มีคอร์ส เริ่มสร้างคอร์สแรกของคุณ</p>
+          <p className="text-center text-slate-500">ยังไม่มีคลาส เริ่มสร้างคลาสแรกของคุณ</p>
         ) : (
           courses.map((c) => (
             <Link key={c.id} href={`/studio/courses/${c.id}`}>
@@ -141,7 +112,7 @@ export default function DashboardPage() {
                 <div>
                   <h3 className="font-semibold text-slate-900">{c.title}</h3>
                   <p className="text-sm text-slate-500">
-                    {c._count.sections} บท · {c._count.enrollments} ผู้เรียน
+                    {c._count.sections} กลุ่มคลิป · {c._count.enrollments} ผู้เรียน
                   </p>
                 </div>
                 <Badge

@@ -21,7 +21,7 @@ export function ComingSoon({
       </div>
 
       <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-slate-300 bg-white p-12 text-center">
-        <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-lime text-ink">
+        <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gold-400 text-ink">
           <Icon size={30} />
         </span>
         <h2 className="mt-5 text-xl font-bold text-ink">เร็วๆ นี้</h2>
@@ -36,7 +36,7 @@ export function ComingSoon({
                 key={f}
                 className="flex items-center gap-2 rounded-xl bg-slate-50 px-3 py-2 text-sm text-slate-600"
               >
-                <span className="h-1.5 w-1.5 rounded-full bg-lime-600" />
+                <span className="h-1.5 w-1.5 rounded-full bg-gold-600" />
                 {f}
               </li>
             ))}
