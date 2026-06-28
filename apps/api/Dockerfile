@@ -13,9 +13,10 @@ RUN pnpm prisma:generate && pnpm build
 
 FROM node:20-alpine
 WORKDIR /app
-RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
+RUN apk add --no-cache openssl && corepack enable && corepack prepare pnpm@9.15.0 --activate
 COPY --from=builder /app/node_modules /app/node_modules
 COPY --from=builder /app/apps/api/dist /app/apps/api/dist
+COPY --from=builder /app/apps/api/node_modules /app/apps/api/node_modules
 COPY --from=builder /app/apps/api/package.json /app/apps/api/
 COPY --from=builder /app/apps/api/prisma /app/apps/api/prisma
 WORKDIR /app/apps/api
