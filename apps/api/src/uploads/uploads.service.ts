@@ -10,16 +10,27 @@ export class UploadsService {
   private readonly publicUrl: string;
 
   constructor() {
-    const accountId = process.env.R2_ACCOUNT_ID;
-    const accessKeyId = process.env.R2_ACCESS_KEY_ID;
-    const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY;
-    this.bucket = process.env.R2_BUCKET ?? "";
-    this.publicUrl = (process.env.R2_PUBLIC_URL ?? "").replace(/\/$/, "");
+    // Generic S3-compatible storage. Works with Cloudflare R2 (set R2_*) or
+    // Supabase Storage's S3 endpoint (set S3_*). S3_* takes precedence.
+    const accessKeyId = process.env.S3_ACCESS_KEY_ID ?? process.env.R2_ACCESS_KEY_ID;
+    const secretAccessKey =
+      process.env.S3_SECRET_ACCESS_KEY ?? process.env.R2_SECRET_ACCESS_KEY;
+    this.bucket = process.env.S3_BUCKET ?? process.env.R2_BUCKET ?? "";
+    this.publicUrl = (process.env.S3_PUBLIC_URL ?? process.env.R2_PUBLIC_URL ?? "").replace(/\/$/, "");
 
-    if (accountId && accessKeyId && secretAccessKey && this.bucket) {
+    const endpoint =
+      process.env.S3_ENDPOINT ??
+      (process.env.R2_ACCOUNT_ID
+        ? `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`
+        : undefined);
+    const region = process.env.S3_REGION ?? "auto";
+    const forcePathStyle = process.env.S3_FORCE_PATH_STYLE === "true";
+
+    if (accessKeyId && secretAccessKey && this.bucket && endpoint) {
       this.client = new S3Client({
-        region: "auto",
-        endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
+        region,
+        endpoint,
+        forcePathStyle,
         credentials: { accessKeyId, secretAccessKey },
       });
     } else {
@@ -38,7 +49,7 @@ export class UploadsService {
   }) {
     if (!this.client) {
       throw new InternalServerErrorException(
-        "R2 storage is not configured (set R2_* env vars)",
+        "Object storage is not configured (set S3_* env vars)",
       );
     }
 

@@ -16,6 +16,14 @@ export interface BroadcastInput {
   audience: BroadcastAudience;
 }
 
+export interface CreateAdminCourseInput {
+  title: string;
+  instructorId: string;
+  description?: string;
+  coverImageUrl?: string;
+  priceCents?: number;
+}
+
 @Injectable()
 export class AdminService {
   constructor(private readonly prisma: PrismaService) {}
@@ -131,6 +139,36 @@ export class AdminService {
     });
   }
 
+  /** Admin-created course assigned to an existing instructor. Created as a
+   * draft so the instructor can fill in clips via the studio before publish. */
+  async createCourse(dto: CreateAdminCourseInput) {
+    const instructor = await this.prisma.profile.findUnique({
+      where: { id: dto.instructorId },
+      select: { id: true, role: true },
+    });
+    if (!instructor || instructor.role !== "INSTRUCTOR") {
+      throw new BadRequestException(
+        "ผู้สอนไม่ถูกต้อง กรุณาเลือกผู้สอนที่มีสิทธิ์",
+      );
+    }
+    const slug = await this.uniqueSlug(this.slugify(dto.title));
+    return this.prisma.course.create({
+      data: {
+        title: dto.title,
+        description: dto.description,
+        coverImageUrl: dto.coverImageUrl,
+        priceCents: dto.priceCents ?? 0,
+        slug,
+        instructorId: dto.instructorId,
+        status: "DRAFT" satisfies CourseStatus,
+      },
+      include: {
+        instructor: { select: { id: true, displayName: true, email: true } },
+        _count: { select: { sections: true, enrollments: true } },
+      },
+    });
+  }
+
   setCourseStatus(id: string, status: CourseStatus) {
     return this.prisma.course.update({ where: { id }, data: { status } });
   }
@@ -154,6 +192,25 @@ export class AdminService {
   async deletePost(id: string) {
     await this.prisma.post.delete({ where: { id } });
     return { ok: true };
+  }
+
+  private slugify(input: string): string {
+    const base = input
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9\u0E00-\u0E7F]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+    return base || "course";
+  }
+
+  private async uniqueSlug(base: string): Promise<string> {
+    let slug = base;
+    let n = 1;
+    // eslint-disable-next-line no-await-in-loop
+    while (await this.prisma.course.findUnique({ where: { slug } })) {
+      slug = `${base}-${n++}`;
+    }
+    return slug;
   }
 
   async broadcast(input: BroadcastInput) {

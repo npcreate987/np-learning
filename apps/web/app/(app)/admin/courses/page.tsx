@@ -1,10 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Trash2 } from "lucide-react";
+import { Plus, Trash2, X } from "lucide-react";
 import { api, ApiError } from "@/lib/api";
 import { AdminGuard } from "@/components/admin-guard";
-import { Badge, Button, Card } from "@/components/ui";
+import { Badge, Button, Card, Input, Label, Textarea } from "@/components/ui";
 import { cn } from "@/lib/utils";
 
 interface AdminCourse {
@@ -16,6 +16,12 @@ interface AdminCourse {
   createdAt: string;
   instructor: { id: string; displayName: string | null; email: string };
   _count: { sections: number; enrollments: number };
+}
+
+interface InstructorOption {
+  id: string;
+  displayName: string | null;
+  email: string;
 }
 
 function CoursesAdmin() {
@@ -65,11 +71,81 @@ function CoursesAdmin() {
     }
   }
 
+  // ---- create course ----
+  const [showCreate, setShowCreate] = useState(false);
+  const [instructors, setInstructors] = useState<InstructorOption[]>([]);
+  const [loadingInstructors, setLoadingInstructors] = useState(false);
+  const [form, setForm] = useState({
+    title: "",
+    instructorId: "",
+    description: "",
+    priceBaht: "",
+    coverImageUrl: "",
+  });
+  const [creating, setCreating] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+
+  async function openCreate() {
+    setShowCreate(true);
+    setFormError(null);
+    if (instructors.length > 0) return;
+    setLoadingInstructors(true);
+    try {
+      const users = await api.get<InstructorOption[]>("/admin/users?role=INSTRUCTOR", true);
+      setInstructors(users);
+      setForm((f) => ({ ...f, instructorId: users[0]?.id ?? "" }));
+    } catch (err) {
+      setFormError(err instanceof ApiError ? err.message : "โหลดรายชื่อผู้สอนไม่สำเร็จ");
+    } finally {
+      setLoadingInstructors(false);
+    }
+  }
+
+  function closeCreate() {
+    setShowCreate(false);
+    setFormError(null);
+  }
+
+  async function submitCreate(e: React.FormEvent) {
+    e.preventDefault();
+    const title = form.title.trim();
+    if (!title || !form.instructorId) return;
+    const baht = Number(form.priceBaht);
+    const priceCents = form.priceBaht && Number.isFinite(baht) ? Math.round(baht * 100) : undefined;
+    setCreating(true);
+    setFormError(null);
+    try {
+      const created = await api.post<AdminCourse>(
+        "/admin/courses",
+        {
+          title,
+          instructorId: form.instructorId,
+          description: form.description.trim() || undefined,
+          coverImageUrl: form.coverImageUrl.trim() || undefined,
+          priceCents,
+        },
+        true,
+      );
+      setCourses((prev) => [created, ...prev]);
+      setForm({ title: "", instructorId: instructors[0]?.id ?? "", description: "", priceBaht: "", coverImageUrl: "" });
+      setShowCreate(false);
+    } catch (err) {
+      setFormError(err instanceof ApiError ? err.message : "สร้างคอร์สไม่สำเร็จ");
+    } finally {
+      setCreating(false);
+    }
+  }
+
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-ink">จัดการคอร์สทั้งหมด</h1>
-        <p className="mt-1 text-sm text-slate-500">ควบคุมสถานะและลบคอร์สของผู้สอนทุกคน</p>
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-ink">จัดการคอร์สทั้งหมด</h1>
+          <p className="mt-1 text-sm text-slate-500">เพิ่ม ควบคุมสถานะ และลบคอร์สของผู้สอนทุกคน</p>
+        </div>
+        <Button onClick={openCreate}>
+          <Plus size={18} /> เพิ่มคอร์ส
+        </Button>
       </div>
 
       {error && (
@@ -146,6 +222,127 @@ function CoursesAdmin() {
             </table>
           </div>
         </Card>
+      )}
+
+      {showCreate && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4"
+          onClick={closeCreate}
+        >
+          <Card
+            className="w-full max-w-lg p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-bold text-ink">เพิ่มคอร์สใหม่</h2>
+              <button
+                onClick={closeCreate}
+                className="rounded-full p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+                title="ปิด"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {formError && (
+              <div className="mt-3 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                {formError}
+              </div>
+            )}
+
+            <form onSubmit={submitCreate} className="mt-4 space-y-4">
+              <div>
+                <Label htmlFor="ac-title">ชื่อคอร์ส</Label>
+                <Input
+                  id="ac-title"
+                  required
+                  minLength={3}
+                  maxLength={160}
+                  value={form.title}
+                  onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+                  placeholder="เช่น TikTok Marketing 101"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="ac-instructor">ผู้สอน</Label>
+                {loadingInstructors ? (
+                  <p className="text-sm text-slate-400">กำลังโหลดรายชื่อผู้สอน...</p>
+                ) : instructors.length === 0 ? (
+                  <p className="text-sm text-amber-600">
+                    ยังไม่มีผู้สอนในระบบ กรุณาตั้งผู้ใช้คนหนึ่งเป็นผู้สอนก่อนในหน้าจัดการผู้ใช้
+                  </p>
+                ) : (
+                  <select
+                    id="ac-instructor"
+                    value={form.instructorId}
+                    onChange={(e) => setForm((f) => ({ ...f, instructorId: e.target.value }))}
+                    className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100"
+                  >
+                    {instructors.map((u) => (
+                      <option key={u.id} value={u.id}>
+                        {u.displayName ?? u.email}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </div>
+
+              <div>
+                <Label htmlFor="ac-desc">รายละเอียด</Label>
+                <Textarea
+                  id="ac-desc"
+                  rows={3}
+                  maxLength={5000}
+                  value={form.description}
+                  onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+                  placeholder="คำอธิบายคอร์ส (ไม่บังคับ)"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="ac-price">ราคา (บาท)</Label>
+                  <Input
+                    id="ac-price"
+                    type="number"
+                    min={0}
+                    step={1}
+                    value={form.priceBaht}
+                    onChange={(e) => setForm((f) => ({ ...f, priceBaht: e.target.value }))}
+                    placeholder="0"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="ac-cover">URL รูปปก</Label>
+                  <Input
+                    id="ac-cover"
+                    type="url"
+                    maxLength={2048}
+                    value={form.coverImageUrl}
+                    onChange={(e) => setForm((f) => ({ ...f, coverImageUrl: e.target.value }))}
+                    placeholder="https://... (ไม่บังคับ)"
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2">
+                <Button type="button" variant="outline" onClick={closeCreate}>
+                  ยกเลิก
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={creating || !form.title.trim() || !form.instructorId || instructors.length === 0}
+                >
+                  {creating ? "กำลังสร้าง..." : "สร้างคอร์ส"}
+                </Button>
+              </div>
+              <p className="text-xs text-slate-400">
+                คอร์สจะถูกสร้างเป็น “ฉบับร่าง” ผู้สอนสามารถเข้าไปเพิ่มคลิปและเผยแพร่เองได้ที่ Studio
+              </p>
+            </form>
+          </Card>
+        </div>
       )}
     </div>
   );

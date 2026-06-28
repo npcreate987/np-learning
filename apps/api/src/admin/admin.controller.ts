@@ -9,7 +9,7 @@ import {
   Query,
   UseGuards,
 } from "@nestjs/common";
-import { IsIn, IsOptional, IsString, MaxLength, MinLength } from "class-validator";
+import { IsIn, IsInt, Min, IsOptional, IsString, MaxLength, MinLength } from "class-validator";
 import type { CourseStatus, Role } from "@prisma/client";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { RolesGuard } from "../auth/roles.guard";
@@ -46,6 +46,32 @@ class BroadcastDto {
   audience!: BroadcastAudience;
 }
 
+class CreateAdminCourseDto {
+  @IsString()
+  @MinLength(3)
+  @MaxLength(160)
+  title!: string;
+
+  @IsString()
+  @MinLength(1)
+  instructorId!: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(5000)
+  description?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(2048)
+  coverImageUrl?: string;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  priceCents?: number;
+}
+
 @Controller("admin")
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles("ADMIN")
@@ -77,6 +103,11 @@ export class AdminController {
   @Get("courses")
   courses() {
     return this.service.listCourses();
+  }
+
+  @Post("courses")
+  createCourse(@Body() dto: CreateAdminCourseDto) {
+    return this.service.createCourse(dto);
   }
 
   @Post("courses/:id/publish")

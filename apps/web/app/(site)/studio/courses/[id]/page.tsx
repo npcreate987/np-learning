@@ -48,6 +48,7 @@ export default function CourseEditorPage() {
   const [price, setPrice] = useState(0);
   const [savingMeta, setSavingMeta] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [uploadingVideo, setUploadingVideo] = useState(false);
 
   // clip editing
   const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
@@ -123,6 +124,24 @@ export default function CourseEditorPage() {
       if (err instanceof ApiError) alert(err.message);
     } finally {
       setUploading(false);
+    }
+  }
+
+  async function onVideoFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingVideo(true);
+    try {
+      const url = await uploadFile(file);
+      setLessonVideoUrl(url);
+      if (!lessonTitle.trim() || lessonTitle === "คลิปใหม่") {
+        setLessonTitle(file.name.replace(/\.[^.]+$/, ""));
+      }
+    } catch (err) {
+      if (err instanceof ApiError) alert(err.message);
+    } finally {
+      setUploadingVideo(false);
+      e.target.value = "";
     }
   }
 
@@ -361,6 +380,20 @@ export default function CourseEditorPage() {
                   onChange={(e) => setLessonVideoUrl(e.target.value)}
                   placeholder="วางลิงก์ YouTube หรือ URL .mp4"
                 />
+                <label className="mt-2 flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-slate-300 px-3 py-2 text-xs text-slate-600 hover:bg-slate-50">
+                  <Upload size={14} />
+                  {uploadingVideo ? "กำลังอัปโหลดวิดีโอ..." : "อัปโหลดไฟล์วิดีโอ (.mp4 ฯลฯ)"}
+                  <input
+                    type="file"
+                    accept="video/*"
+                    className="hidden"
+                    onChange={onVideoFileChange}
+                    disabled={uploadingVideo}
+                  />
+                </label>
+                <p className="mt-1 text-xs text-slate-400">
+                  อัปโหลดแล้ว URL จะใส่ช่องด้านบนให้อัตโนมัติ จากนั้นกด “บันทึกคลิป”
+                </p>
               </div>
               <div>
                 <Label>คำบรรยายคลิป (แสดงบนฟีด)</Label>
