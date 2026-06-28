@@ -4,6 +4,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from "@nestjs/common";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
@@ -17,8 +18,9 @@ export class NotificationsController {
   constructor(private readonly service: NotificationsService) {}
 
   @Get()
-  list(@CurrentUser() user: AuthUser) {
-    return this.service.list(user);
+  list(@CurrentUser() user: AuthUser, @Query("take") take?: string) {
+    const n = take ? Number.parseInt(take, 10) : undefined;
+    return this.service.list(user, Number.isFinite(n) ? n : undefined);
   }
 
   @Get("unread-count")

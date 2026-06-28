@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   Award,
   Bell,
@@ -22,8 +22,8 @@ import {
   Users,
   Wand2,
 } from "lucide-react";
-import { api } from "@/lib/api";
 import { useAuth } from "./auth-provider";
+import { useNotifications } from "./notifications-provider";
 import { cn } from "@/lib/utils";
 
 interface NavItem {
@@ -61,25 +61,9 @@ const adminItems: NavItem[] = [
 export function EduSidebar({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
   const { profile } = useAuth();
-  const [unread, setUnread] = useState(0);
+  const { unread, items, markAllRead } = useNotifications();
+  const [notifOpen, setNotifOpen] = useState(false);
   const isAdmin = profile?.role === "ADMIN";
-
-  // Live unread notification count for the bell badge. Re-fetch on navigation
-  // so the badge stays fresh after the user reads notifications elsewhere.
-  useEffect(() => {
-    let active = true;
-    api
-      .get<{ count: number }>("/notifications/unread-count", true)
-      .then((r) => {
-        if (active) setUnread(r.count);
-      })
-      .catch(() => {
-        /* not logged in or network — leave at 0 */
-      });
-    return () => {
-      active = false;
-    };
-  }, [pathname]);
 
   return (
     <div className="flex h-full w-full flex-col bg-ink px-4 py-6 text-slate-300">
@@ -102,8 +86,78 @@ export function EduSidebar({ onNavigate }: { onNavigate?: () => void }) {
             ? pathname === item.href
             : pathname === item.href ||
               (item.href !== "/dashboard" && pathname.startsWith(item.href));
-          // The notifications badge comes from the live unread count above.
-          const badge = item.href === "/notifications" ? unread : item.badge;
+
+          // The bell is a dropdown (recent notifications + mark-all-read),
+          // not a plain link. The live unread count comes from the
+          // NotificationsProvider, which also drives the toast popups.
+          if (item.href === "/notifications") {
+            const open = active || notifOpen;
+            return (
+              <div key={item.label}>
+                <button
+                  onClick={() => setNotifOpen((v) => !v)}
+                  className={cn(
+                    "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
+                    open
+                      ? "bg-white text-ink shadow-sm"
+                      : "text-slate-300 hover:bg-white/10 hover:text-white",
+                  )}
+                >
+                  <item.icon size={18} />
+                  <span className="flex-1 text-left">{item.label}</span>
+                  {unread > 0 ? (
+                    <span
+                      className={cn(
+                        "flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-semibold",
+                        open ? "bg-brand-100 text-brand-800" : "bg-white/10 text-white",
+                      )}
+                    >
+                      {unread}
+                    </span>
+                  ) : null}
+                </button>
+
+                {notifOpen && (
+                  <div className="mt-1 space-y-1 rounded-xl bg-white/5 p-2">
+                    {items.length === 0 ? (
+                      <p className="px-2 py-2 text-xs text-slate-400">ยังไม่มีการแจ้งเตือน</p>
+                    ) : (
+                      items.slice(0, 5).map((n) => (
+                        <Link
+                          key={n.id}
+                          href="/notifications"
+                          onClick={onNavigate}
+                          className="block rounded-lg px-2 py-1.5 hover:bg-white/10"
+                        >
+                          <p className="text-xs font-medium text-white">{n.title}</p>
+                          <p className="mt-0.5 line-clamp-1 text-[11px] text-slate-300">
+                            {n.body}
+                          </p>
+                        </Link>
+                      ))
+                    )}
+                    <div className="flex items-center justify-between border-t border-white/10 pt-2">
+                      <button
+                        onClick={() => markAllRead()}
+                        className="text-[11px] text-slate-300 hover:text-white"
+                      >
+                        อ่านทั้งหมด
+                      </button>
+                      <Link
+                        href="/notifications"
+                        onClick={onNavigate}
+                        className="text-[11px] text-gold-400 hover:underline"
+                      >
+                        ดูทั้งหมด
+                      </Link>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          }
+
+          const badge = item.badge;
           return (
             <Link
               key={item.label}

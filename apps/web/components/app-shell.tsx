@@ -3,13 +3,16 @@
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
 import { EduSidebar } from "./edu-sidebar";
+import { NotificationsProvider } from "./notifications-provider";
+import { NotificationsToaster } from "./notifications-toaster";
 import { cn } from "@/lib/utils";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-cream-50">
+    <NotificationsProvider>
+      <div className="min-h-screen bg-cream-50">
       {/* Desktop sidebar */}
       <aside className="fixed inset-y-0 left-0 hidden w-64 p-3 lg:block">
         <div className="h-full overflow-hidden rounded-[2rem] shadow-[0_18px_60px_rgba(23,20,47,0.14)]">
@@ -57,6 +60,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <div className="lg:pl-64">
         <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6">{children}</div>
       </div>
+
+      <NotificationsToaster />
     </div>
+    </NotificationsProvider>
   );
 }

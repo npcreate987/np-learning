@@ -6,11 +6,11 @@ import type { AuthUser } from "../auth/jwt.strategy";
 export class NotificationsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  list(user: AuthUser) {
+  list(user: AuthUser, take = 50) {
     return this.prisma.notification.findMany({
       where: { userId: user.id },
       orderBy: { createdAt: "desc" },
-      take: 50,
+      take: Math.min(50, Math.max(1, take)),
     });
   }
 
