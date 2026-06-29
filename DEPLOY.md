@@ -84,9 +84,21 @@ bash scripts/push-to-github.sh
 1. Supabase → **Authentication → URL Configuration**
    - Site URL = `https://np-learning.vercel.app`
    - Redirect URLs เพิ่ม `https://np-learning.vercel.app/**`
-2. **Authentication → Providers → Email** → ปิด *Confirm email* (ถ้าอยากให้สมัครแล้วใช้ได้เลย)
+2. **Authentication → Providers → Email** → **เปิด** *Confirm email* (ต้องเปิดไว้ ไม่งั้นจะไม่ส่งรหัส OTP ออกเมล)
+3. **Authentication → Email Templates → Confirm signup** → เปลี่ยนเนื้อหาให้ส่ง **รหัส 6 หลัก** แทนลิงก์ โดยใช้ตัวแปร `{{ .Token }}` (ห้ามใช้ `{{ .ConfirmationURL }}`)
 
-เสร็จแล้วเปิด `https://np-learning.vercel.app/signup` สมัครได้เลย
+   ตัวอย่างเนื้อหาเมล:
+   ```
+   ยินดีต้อนรับสู่ NP Learning
+
+   รหัสยืนยันบัญชีของคุณคือ: {{ .Token }}
+
+   รหัสจะหมดอายุใน 1 ชั่วโมง หากไม่ใช่คุณที่สมัคร กรุณาเพิกเฉยอีเมลนี้
+   ```
+
+   > สำคัญ: หน้า `/verify` จะใช้ `supabase.auth.verifyOtp({ type: 'signup' })` ยืนยันรหัสที่ผู้ใช้กรอก ดังนั้นเมลต้องโชว์ `{{ .Token }}` ถ้าใช้ `{{ .ConfirmationURL }}` จะเป็นลิงก์ (คลิกแล้วยืนยันฝั่งเมล) และรหัส OTP จะไม่แสดง
+
+เสร็จแล้วเปิด `https://np-learning.vercel.app/signup` สมัคร → รอรหัสในเมล → กรอก OTP 6 หลัก → เข้าระบบได้เลย
 
 ---
 

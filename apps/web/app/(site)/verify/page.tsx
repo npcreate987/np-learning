@@ -12,11 +12,14 @@ function VerifyForm() {
   const email = params.get("email") ?? "";
   const [token, setToken] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [info, setInfo] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [resending, setResending] = useState(false);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    setInfo(null);
     setLoading(true);
     const { data, error } = await supabase.auth.verifyOtp({
       email,
@@ -33,6 +36,20 @@ function VerifyForm() {
     } else {
       router.push("/login");
     }
+  }
+
+  async function onResend() {
+    if (!email) return;
+    setError(null);
+    setInfo(null);
+    setResending(true);
+    const { error } = await supabase.auth.resend({ type: "signup", email });
+    setResending(false);
+    if (error) {
+      setError(error.message);
+      return;
+    }
+    setInfo(`ส่งรหัสใหม่ไปยัง ${email} แล้ว`);
   }
 
   return (
@@ -63,20 +80,29 @@ function VerifyForm() {
               {error}
             </p>
           )}
+          {info && (
+            <p className="rounded-xl bg-green-50 px-3 py-2 text-sm text-green-700">
+              {info}
+            </p>
+          )}
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? "กำลังยืนยัน..." : "ยืนยันรหัส"}
           </Button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-slate-500">
-          ไม่ได้รับรหัส? ตรวจสอบกล่องจดหมายรวมทั้งสแปม หรือ{" "}
-          <Link
-            href="/signup"
-            className="font-medium text-brand-600 hover:underline"
+        <div className="mt-6 flex items-center justify-between text-sm">
+          <button
+            type="button"
+            onClick={onResend}
+            disabled={resending || !email}
+            className="font-medium text-brand-600 hover:underline disabled:opacity-50"
           >
+            {resending ? "กำลังส่ง..." : "ส่งรหัสใหม่"}
+          </button>
+          <Link href="/signup" className="text-slate-500 hover:underline">
             สมัครใหม่
           </Link>
-        </p>
+        </div>
       </Card>
     </div>
   );

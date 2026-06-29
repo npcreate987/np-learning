@@ -39,9 +39,10 @@ function SignupForm() {
       return;
     }
     if (data.session) {
+      // Email confirmation disabled — already logged in.
       router.push("/dashboard");
     } else {
-      // Email OTP verification — user enters the 6-digit code on /verify.
+      // OTP sent to email — continue on the dedicated verify page.
       router.push(`/verify?email=${encodeURIComponent(email)}`);
     }
   }
