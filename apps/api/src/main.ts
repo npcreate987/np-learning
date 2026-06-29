@@ -9,6 +9,14 @@ try {
   // No .env file present; rely on the ambient environment.
 }
 
+// eslint-disable-next-line no-console
+console.log("[main] node starting", {
+  cwd: process.cwd(),
+  PORT: process.env.PORT,
+  API_PORT: process.env.API_PORT,
+  hasDbUrl: !!process.env.DATABASE_URL,
+});
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
@@ -29,9 +37,15 @@ async function bootstrap() {
 
   // Railway injects PORT (dynamic); fall back to API_PORT for local dev, then 4000.
   const port = Number(process.env.PORT ?? process.env.API_PORT ?? 4000);
+  // eslint-disable-next-line no-console
+  console.log(`[main] listening on port ${port}`);
   await app.listen(port);
   // eslint-disable-next-line no-console
   console.log(`API listening on http://localhost:${port}/api`);
 }
 
-bootstrap();
+bootstrap().catch((err) => {
+  // eslint-disable-next-line no-console
+  console.error("[main] bootstrap failed", err);
+  process.exit(1);
+});
