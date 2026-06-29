@@ -55,7 +55,7 @@ export default function AiTutorPage() {
       const res = await api.post<{ text: string }>(
         "/ai/chat",
         { messages: next, lessonContext: lessonContext ?? undefined },
-        false,
+        true,
       );
       setMessages((m) => [...m, { role: "model", text: res.text }]);
     } catch (e) {
@@ -63,7 +63,7 @@ export default function AiTutorPage() {
       setError(msg);
       setMessages((m) => [
         ...m,
-        { role: "model", text: `⚠️ ${msg}` },
+        { role: "model", text: `ไม่สามารถตอบได้ในตอนนี้: ${msg}` },
       ]);
     } finally {
       setLoading(false);

@@ -16,6 +16,22 @@ function VerifyForm() {
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
 
+  if (!email) {
+    return (
+      <div className="mx-auto max-w-md py-10">
+        <Card className="p-8 text-center">
+          <h1 className="text-2xl font-bold text-ink">ลิงก์ไม่ถูกต้อง</h1>
+          <p className="mt-3 text-sm text-slate-500">
+            ไม่พบอีเมลที่จะยืนยัน กรุณาสมัครใหม่อีกครั้งเพื่อรับรหัสยืนยัน
+          </p>
+          <Link href="/signup" className="mt-6 inline-block">
+            <Button>ไปหน้าสมัคร</Button>
+          </Link>
+        </Card>
+      </div>
+    );
+  }
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);

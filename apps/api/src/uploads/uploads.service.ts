@@ -72,4 +72,39 @@ export class UploadsService {
       key,
     };
   }
+
+  /**
+   * Same as presign() but scoped to a user's avatar (image-only, shorter
+   * expiry). Available to any authenticated user, not just instructors.
+   */
+  async avatarPresign(params: {
+    userId: string;
+    filename: string;
+    contentType: string;
+  }) {
+    if (!this.client) {
+      throw new InternalServerErrorException(
+        "Object storage is not configured (set S3_* env vars)",
+      );
+    }
+
+    const safeName = params.filename.replace(/[^a-zA-Z0-9._-]/g, "_");
+    const key = `avatars/${params.userId}/${randomUUID()}-${safeName}`;
+
+    const command = new PutObjectCommand({
+      Bucket: this.bucket,
+      Key: key,
+      ContentType: params.contentType,
+    });
+
+    const uploadUrl = await getSignedUrl(this.client, command, {
+      expiresIn: 120,
+    });
+
+    return {
+      uploadUrl,
+      publicUrl: `${this.publicUrl}/${key}`,
+      key,
+    };
+  }
 }

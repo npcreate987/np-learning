@@ -1,6 +1,7 @@
 import { ValidationPipe } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module";
+import { PrismaExceptionFilter } from "./prisma-exception.filter";
 
 // Load apps/api/.env into process.env before the app (and JWT strategy) boot.
 try {
@@ -28,6 +29,7 @@ async function bootstrap() {
       forbidNonWhitelisted: true,
     }),
   );
+  app.useGlobalFilters(new PrismaExceptionFilter());
 
   const origin = process.env.WEB_ORIGIN ?? "http://localhost:3000";
   app.enableCors({

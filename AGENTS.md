@@ -6,6 +6,10 @@
 - ดูรายละเอียดเต็มใน `context.md`
 - สไตล์/คู่มือฟีเจอร์ดูใน `SKILL.md`
 
+## ก่อนรื้อรีวิวใหม่
+- อ่าน section "รีวิวโค้ด + ปัญหาที่ทราบ" ใน `context.md` ก่อน — มีรายการ bug ที่แก้แล้ว + ที่ยังเหลือ พร้อม `file:line` (อัปเดต 2026-06-29) เพื่อไม่ต้องรื้อทั้งโปรเจ็คมารีวิวใหม่
+- แพทเทิร์นที่ห้ามทำซ้ำ (progress/enrollment-gated, avatar-presign vs presign, ai/chat auth, PUBLISHED-only getBySlug, atomic referral, `$transaction` สำหรับ multi-step write) ดูใน `SKILL.md` → "แพทเทิร์นที่ต้องรักษา"
+
 ## สถาปัตยกรรม (ห้ามสลับ)
 - **Monorepo** pnpm workspaces + Turborepo
 - `apps/web` = Next.js 15 (App Router, React 19, Tailwind) — deploy Vercel

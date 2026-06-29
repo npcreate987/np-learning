@@ -27,6 +27,17 @@
 3. หน้าใหม่ต้องใช้ `@/components/ui` และ palette ใน `tailwind.config.ts` เท่านั้น
 4. หากมี model ใหม่ → แก้ `schema.prisma` + สร้าง migration SQL + อัปเดต `context.md`
 
+## แพทเทิร์นที่ต้องรักษา (ห้ามทำซ้ำ bug เดิม)
+- progress endpoint ต้องเช็ก enrollment/ownership ก่อน (กัน IDOR) — ดู `apps/api/src/progress/progress.service.ts`
+- อัปโหลดรูปโปรไฟล์ใช้ `uploadAvatar()` → `/uploads/avatar-presign` (image-only, ทุกคน); คลังคอร์สใช้ `uploadFile()` → `/uploads/presign` (INSTRUCTOR เท่านั้น) — **อย่าสลับ** ไม่งั้นนักเรียนอัปโหลดรูปไม่ได้
+- `ai/chat` บังคับ auth (`JwtAuthGuard`) + เว็บเรียก `auth=true`
+- public course endpoint คืนเฉพาะ `PUBLISHED` (draft ดูได้ที่ `getForEdit` ของเจ้าของเท่านั้น)
+- referral apply ต้อง atomic (`updateMany where referredById: null`) + เคลียร์ `np_ref_code` เฉพาะตอนสำเร็จ (ลบใน `finally` = หายถาวรตอน fail)
+- multi-step write ที่ต้อง consistent → ใช้ `$transaction` (เช่น quiz submit + issue cert)
+- ใช้ `@/components/ui` อย่างเดียว (ห้าม raw `<input>`/`<textarea>`) + ห้าม emoji ใน UI รวม alert/error message
+- Prisma error ไม่ต้อง try/catch เองทุกจุด — `PrismaExceptionFilter` แปลง P2025/P2002/P2003 ให้แล้ว (เว้นแต่จะ map เป็น message เฉพาะ)
+- ดูรายการ bug/ช่องโหว่เต็ม (พร้อม `file:line`) ใน section "รีวิวโค้ด + ปัญหาที่ทราบ" ของ `context.md` ก่อนแก้
+
 ## งานที่รอทำ (todo)
 - โลโก้จริงจาก npcreate.co.th (รอไฟล์จากผู้ใช้)
 - ปรับ icon PWA (`public/icon.svg`, `icon-maskable.svg`) ตามโลโก้

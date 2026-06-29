@@ -44,7 +44,7 @@ export default function MyCoursesPage() {
 
   return (
     <div className="py-4">
-      <h1 className="text-2xl font-bold text-slate-900">คลาสของฉัน</h1>
+      <h1 className="text-2xl font-bold text-ink">คลาสของฉัน</h1>
 
       {items.length === 0 ? (
         <Card className="mt-8 p-10 text-center">
@@ -73,7 +73,7 @@ export default function MyCoursesPage() {
                   )}
                 </div>
                 <div className="flex flex-1 flex-col p-4">
-                  <h3 className="font-semibold text-slate-900">{course.title}</h3>
+                  <h3 className="font-semibold text-ink">{course.title}</h3>
                   <p className="mt-1 text-sm text-slate-500">
                     {course.instructor.displayName ?? "ไม่ระบุผู้สอน"}
                   </p>

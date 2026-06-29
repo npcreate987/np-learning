@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from "@nestjs/common";
+import { Body, Controller, Post, UseGuards } from "@nestjs/common";
 import {
   ArrayMaxSize,
   IsArray,
@@ -11,6 +11,7 @@ import {
 } from "class-validator";
 import { Type } from "class-transformer";
 import { AiService } from "./ai.service";
+import { JwtAuthGuard } from "../auth/jwt-auth.guard";
 
 class ChatMessageDto {
   @IsIn(["user", "model"])
@@ -36,10 +37,10 @@ class ChatDto {
 }
 
 @Controller("ai")
+@UseGuards(JwtAuthGuard)
 export class AiController {
   constructor(private readonly ai: AiService) {}
 
-  // Public for now (dev). Add JwtAuthGuard + rate limiting before production.
   @Post("chat")
   async chat(@Body() dto: ChatDto) {
     const text = await this.ai.chat(dto.messages, dto.lessonContext);

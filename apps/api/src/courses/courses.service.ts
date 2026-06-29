@@ -115,8 +115,10 @@ export class CoursesService {
         },
       },
     });
-    if (!course) {
-      throw new NotFoundException("Course not found");
+    // Public detail view: never expose draft/unpublished courses. Instructors
+    // preview their own drafts via the studio editor (getForEdit, owner-checked).
+    if (!course || course.status !== "PUBLISHED") {
+      throw new NotFoundException("ไม่พบคอร์ส");
     }
     return course;
   }

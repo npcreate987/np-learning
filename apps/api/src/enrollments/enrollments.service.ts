@@ -75,11 +75,13 @@ export class EnrollmentsService {
           });
 
     const totalByCourse = new Map<string, number>();
-    const firstLessonByCourse = new Map<string, string>();
+    const orderedLessonIdsByCourse = new Map<string, string[]>();
     for (const l of lessons) {
       const cid = l.section.courseId;
       totalByCourse.set(cid, (totalByCourse.get(cid) ?? 0) + 1);
-      if (!firstLessonByCourse.has(cid)) firstLessonByCourse.set(cid, l.id);
+      const arr = orderedLessonIdsByCourse.get(cid);
+      if (arr) arr.push(l.id);
+      else orderedLessonIdsByCourse.set(cid, [l.id]);
     }
 
     const completed =
@@ -89,6 +91,7 @@ export class EnrollmentsService {
             where: { userId: user.id, lessonId: { in: lessons.map((l) => l.id) } },
             select: { lessonId: true },
           });
+    const completedSet = new Set(completed.map((c) => c.lessonId));
     const lessonToCourse = new Map(lessons.map((l) => [l.id, l.section.courseId]));
     const completedByCourse = new Map<string, number>();
     for (const c of completed) {
@@ -105,6 +108,13 @@ export class EnrollmentsService {
       const total = totalByCourse.get(e.courseId) ?? 0;
       const done = completedByCourse.get(e.courseId) ?? 0;
       const percent = total === 0 ? 0 : Math.round((done / total) * 100);
+      const ordered = orderedLessonIdsByCourse.get(e.courseId) ?? [];
+      // Resume at the first lesson that isn't complete yet; if everything is
+      // done, point back to the first lesson so learners can review.
+      const nextLessonId =
+        total > 0
+          ? (ordered.find((id) => !completedSet.has(id)) ?? ordered[0] ?? null)
+          : null;
       return {
         id: e.id,
         courseId: e.courseId,
@@ -112,7 +122,7 @@ export class EnrollmentsService {
         totalLessons: total,
         completedLessons: done,
         percent,
-        nextLessonId: total > 0 ? (firstLessonByCourse.get(e.courseId) ?? null) : null,
+        nextLessonId,
         createdAt: e.createdAt,
       };
     });

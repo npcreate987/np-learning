@@ -13,16 +13,20 @@ export class ApiError extends Error {
 }
 
 async function authHeader(): Promise<Record<string, string>> {
-  // Dev demo mode: a local token issued by POST /auth/dev-login takes priority.
+  // Prefer a real Supabase session over a leftover dev demo token so the
+  // caller's identity always matches whoever is actually signed in. In dev
+  // mode there is no Supabase session, so the dev token is still used.
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  if (session?.access_token) {
+    return { Authorization: `Bearer ${session.access_token}` };
+  }
   if (typeof window !== "undefined") {
     const devToken = window.localStorage.getItem("np_dev_token");
     if (devToken) return { Authorization: `Bearer ${devToken}` };
   }
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-  const token = session?.access_token;
-  return token ? { Authorization: `Bearer ${token}` } : {};
+  return {};
 }
 
 async function request<T>(
@@ -80,7 +84,8 @@ export const api = {
     request<T>(path, { method: "DELETE", auth }),
 };
 
-/** Upload a file to R2 using a presigned PUT url obtained from the API. */
+/** Upload a file to S3-compatible storage using a presigned PUT url from the API.
+ *  Course assets are instructor-only; use uploadAvatar() for profile pictures. */
 export async function uploadFile(file: File): Promise<string> {
   const presign = await api.post<{ uploadUrl: string; publicUrl: string }>(
     "/uploads/presign",
@@ -93,6 +98,24 @@ export async function uploadFile(file: File): Promise<string> {
   });
   if (!put.ok) {
     throw new ApiError(put.status, "Upload failed");
+  }
+  return presign.publicUrl;
+}
+
+/** Upload a profile avatar (image-only). Any authenticated user may call this. */
+export async function uploadAvatar(file: File): Promise<string> {
+  const contentType = file.type || "image/png";
+  const presign = await api.post<{ uploadUrl: string; publicUrl: string }>(
+    "/uploads/avatar-presign",
+    { filename: file.name, contentType },
+  );
+  const put = await fetch(presign.uploadUrl, {
+    method: "PUT",
+    headers: { "Content-Type": contentType },
+    body: file,
+  });
+  if (!put.ok) {
+    throw new ApiError(put.status, "อัปโหลดรูปไม่สำเร็จ");
   }
   return presign.publicUrl;
 }

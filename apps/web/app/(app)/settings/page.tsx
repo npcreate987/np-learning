@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Bell, Camera, Check, Mail, Shield, User } from "lucide-react";
-import { api, ApiError, uploadFile } from "@/lib/api";
+import { api, ApiError, uploadAvatar } from "@/lib/api";
 import { useAuth } from "@/components/auth-provider";
 import { Badge, Button, Card, Input, Label } from "@/components/ui";
 import { cn } from "@/lib/utils";
@@ -93,7 +93,7 @@ export default function SettingsPage() {
     setUploadingAvatar(true);
     setError(null);
     try {
-      const url = await uploadFile(file);
+      const url = await uploadAvatar(file);
       setAvatarUrl(url);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "อัปโหลดรูปไม่สำเร็จ");
@@ -291,7 +291,7 @@ export default function SettingsPage() {
             </div>
             {isStaff && (
               <p className="mt-2 text-xs text-slate-500">
-                คุณสามารถสร้างคลาสได้ผ่านเมนู Creator Center และดูรายชื่อผู้สนใจเรียนได้
+                คุณสามารถสร้างและจัดการคลาสได้ที่เมนู Studio และดูสถิติแพลตฟอร์มได้ที่ Creator Center
               </p>
             )}
           </div>

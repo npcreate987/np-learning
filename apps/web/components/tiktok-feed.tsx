@@ -52,10 +52,21 @@ export function TiktokFeed({ slug }: { slug: string }) {
   const [enrolled, setEnrolled] = useState<boolean | null>(null);
   const [enrolling, setEnrolling] = useState(false);
   const [hasQuiz, setHasQuiz] = useState(false);
+  const [loadError, setLoadError] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  // Lesson ids we've already recorded progress for this session, so we don't
+  // POST /progress/complete repeatedly as the user scrolls back and forth.
+  const markedRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
-    api.get<Feed>(`/courses/slug/${slug}/tiktok-feed`).then(setFeed).catch(() => setFeed(null));
+    setLoadError(false);
+    api
+      .get<Feed>(`/courses/slug/${slug}/tiktok-feed`)
+      .then((f) => setFeed(f))
+      .catch(() => {
+        setFeed(null);
+        setLoadError(true);
+      });
   }, [slug]);
 
   // Check enrollment + quiz presence once we have the course id and a session.
@@ -75,6 +86,17 @@ export function TiktokFeed({ slug }: { slug: string }) {
       setHasQuiz(false);
     }
   }, [feed?.id, session]);
+
+  // Record lesson progress: when a clip becomes the active one and the user
+  // is enrolled, mark it complete. Viewing a short clip counts as completing
+  // it (the API enforces enrollment before accepting the write).
+  useEffect(() => {
+    if (!feed || enrolled !== true) return;
+    const clip = feed.clips[activeIdx];
+    if (!clip || markedRef.current.has(clip.id)) return;
+    markedRef.current.add(clip.id);
+    api.post("/progress/complete", { lessonId: clip.id }, true).catch(() => {});
+  }, [activeIdx, feed, enrolled]);
 
   const onScroll = useCallback(() => {
     const el = containerRef.current;
@@ -99,6 +121,48 @@ export function TiktokFeed({ slug }: { slug: string }) {
     } finally {
       setEnrolling(false);
     }
+  }
+
+  // Hand the current clip's title/caption to the AI Tutor page so learners
+  // can ask questions grounded in the lesson they just watched.
+  function askAiAboutClip(clip: Clip) {
+    if (!feed) return;
+    const ctx = `คลาส "${feed.title}" คลิป "${clip.title}"${clip.caption ? ` — ${clip.caption}` : ""}`;
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("np_lesson_context", ctx);
+    }
+    router.push("/ai-tutor");
+  }
+
+  async function shareClip() {
+    if (!feed || typeof window === "undefined") return;
+    const url = `${window.location.origin}/classes/${feed.slug}`;
+    if (typeof navigator !== "undefined" && navigator.share) {
+      try {
+        await navigator.share({ title: feed.title, url });
+      } catch {
+        /* user cancelled the share sheet — no-op */
+      }
+      return;
+    }
+    if (typeof navigator !== "undefined" && navigator.clipboard) {
+      try {
+        await navigator.clipboard.writeText(url);
+      } catch {
+        /* clipboard blocked — ignore */
+      }
+    }
+  }
+
+  if (loadError) {
+    return (
+      <div className="flex h-[80vh] flex-col items-center justify-center gap-3 text-slate-500">
+        <p>โหลดคลาสไม่สำเร็จ อาจเป็นคลาสที่ไม่มีอยู่หรือถูกลบไปแล้ว</p>
+        <Link href="/classes" className="text-brand-600 hover:underline">
+          กลับหน้าคลาสทั้งหมด
+        </Link>
+      </div>
+    );
   }
 
   if (!feed) {
@@ -170,7 +234,10 @@ export function TiktokFeed({ slug }: { slug: string }) {
                 </span>
                 <span className="text-xs">{liked.has(clip.id) ? "1" : "0"}</span>
               </button>
-              <button className="flex flex-col items-center gap-1 text-white">
+              <button
+                onClick={() => askAiAboutClip(clip)}
+                className="flex flex-col items-center gap-1 text-white"
+              >
                 <span className="flex h-11 w-11 items-center justify-center rounded-full bg-white/20 backdrop-blur">
                   <MessageCircle size={22} />
                 </span>
@@ -182,7 +249,10 @@ export function TiktokFeed({ slug }: { slug: string }) {
                 </span>
                 <span className="text-xs">บันทึก</span>
               </button>
-              <button className="flex flex-col items-center gap-1 text-white">
+              <button
+                onClick={shareClip}
+                className="flex flex-col items-center gap-1 text-white"
+              >
                 <span className="flex h-11 w-11 items-center justify-center rounded-full bg-white/20 backdrop-blur">
                   <Share2 size={20} />
                 </span>
@@ -200,12 +270,13 @@ export function TiktokFeed({ slug }: { slug: string }) {
 
               {enrolled ? (
                 <div className="mt-3 flex flex-wrap items-center gap-2">
-                  <Link
-                    href="/ai-tutor"
+                  <button
+                    type="button"
+                    onClick={() => askAiAboutClip(clip)}
                     className="inline-flex items-center gap-1.5 rounded-full bg-gold-400 px-3 py-1.5 text-xs font-semibold text-ink"
                   >
                     <Sparkles size={14} /> ถาม AI เกี่ยวกับคลิปนี้
-                  </Link>
+                  </button>
                   {hasQuiz && (
                     <Link
                       href={`/quiz/${feed.id}`}

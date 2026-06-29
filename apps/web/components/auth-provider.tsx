@@ -86,15 +86,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const code =
       typeof window !== "undefined" ? localStorage.getItem("np_ref_code") : null;
     if (!code) return;
+    // Guard against duplicate attempts in this session. The code is only
+    // removed from localStorage on success, so a transient network/5xx
+    // failure doesn't permanently lose the referral — a page reload retries
+    // (the guard resets with the ref on remount).
     referralAppliedRef.current = true;
     api
       .post("/referral/apply", { code }, true)
-      .then(() => loadProfile(session))
-      .catch(() => {
-        /* invalid/expired code — drop it below so we don't retry */
-      })
-      .finally(() => {
+      .then(() => {
         if (typeof window !== "undefined") localStorage.removeItem("np_ref_code");
+        return loadProfile(session);
+      })
+      .catch(() => {
+        /* leave np_ref_code in place so it can retry after a reload */
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profile]);

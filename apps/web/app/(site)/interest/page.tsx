@@ -33,18 +33,15 @@ export default function InterestPage() {
 
     setLoading(true);
     try {
-      // auth = false so both logged-in users and guests can submit. The API
-      // uses an optional auth guard and links the account when a token exists.
-      await api.post(
-        "/learning-interest",
-        {
-          fullName: fullName.trim(),
-          phone: phone.replace(/[\s-]/g, ""),
-          address: address.trim() || undefined,
-          note: note.trim() || undefined,
-        },
-        false,
-      );
+      // Default auth=true so a logged-in user's lead is linked to their
+      // account (the API uses an optional guard). Guests still work —
+      // authHeader() sends no token when there's no session.
+      await api.post("/learning-interest", {
+        fullName: fullName.trim(),
+        phone: phone.replace(/[\s-]/g, ""),
+        address: address.trim() || undefined,
+        note: note.trim() || undefined,
+      });
       setDone(true);
     } catch (err) {
       setError(
@@ -59,7 +56,7 @@ export default function InterestPage() {
     return (
       <div className="mx-auto max-w-md py-10">
         <Card className="p-8 text-center">
-          <h1 className="text-2xl font-bold text-slate-900">ขอบคุณที่สนใจ! 🎉</h1>
+          <h1 className="text-2xl font-bold text-slate-900">ขอบคุณที่สนใจ!</h1>
           <p className="mt-3 text-slate-600">
             เราได้รับข้อมูลของคุณแล้ว ทีมงานจะติดต่อกลับโดยเร็วที่สุด
           </p>

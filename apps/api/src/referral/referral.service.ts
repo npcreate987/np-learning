@@ -57,11 +57,13 @@ export class ReferralService {
           referredBy: { select: { referralCode: true, displayName: true } },
         },
       }),
+      // Email is intentionally excluded here — a referrer should not see the
+      // raw addresses of people they invited.
       this.prisma.profile.findMany({
         where: { referredById: user.id },
         orderBy: { createdAt: "desc" },
         take: 20,
-        select: { id: true, displayName: true, email: true, createdAt: true },
+        select: { id: true, displayName: true, createdAt: true },
       }),
       this.prisma.profile.count({ where: { referredById: user.id } }),
     ]);
@@ -95,7 +97,7 @@ export class ReferralService {
 
     const me = await this.prisma.profile.findUniqueOrThrow({
       where: { id: user.id },
-      select: { id: true, referredById: true },
+      select: { id: true, referredById: true, displayName: true },
     });
     if (me.referredById) {
       throw new BadRequestException("คุณถูกแนะนำโดยบัญชีอื่นแล้ว");
@@ -112,19 +114,25 @@ export class ReferralService {
       throw new BadRequestException("ไม่สามารถใช้รหัสของตัวเองได้");
     }
 
-    await this.prisma.profile.update({
-      where: { id: user.id },
+    // Atomic assignment: only wins if referredById is still null, so two
+    // concurrent apply requests can't both link the same signup to referrers.
+    const result = await this.prisma.profile.updateMany({
+      where: { id: user.id, referredById: null },
       data: { referredById: referrer.id },
     });
+    if (result.count === 0) {
+      throw new BadRequestException("คุณถูกแนะนำโดยบัญชีอื่นแล้ว");
+    }
 
-    // Notify the referrer so they can see their network growing.
+    // Notify the referrer so they can see their network growing. The body
+    // names the NEW member (me), not the referrer.
     await this.prisma.notification
       .create({
         data: {
           userId: referrer.id,
           type: "referral",
           title: "มีคนสมัครจากลิงก์ของคุณ",
-          body: `${referrer.displayName ?? "เพื่อนใหม่"} สมัครสมาชิกผ่านลิงก์แนะนำของคุณแล้ว`,
+          body: `${me.displayName ?? "เพื่อนใหม่"} สมัครสมาชิกผ่านลิงก์แนะนำของคุณแล้ว`,
           payload: { referredId: user.id },
         },
       })
