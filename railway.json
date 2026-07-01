@@ -12,7 +12,7 @@
   "deploy": {
     "runtime": "V2",
     "numReplicas": 1,
-    "startCommand": "npx prisma migrate deploy && node dist/main.js",
+    "startCommand": "sh scripts/start-production.sh",
     "sleepApplication": false,
     "useLegacyStacker": false,
     "ipv6EgressEnabled": false,

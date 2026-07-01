@@ -19,7 +19,9 @@ COPY --from=builder /app/apps/api/dist /app/apps/api/dist
 COPY --from=builder /app/apps/api/node_modules /app/apps/api/node_modules
 COPY --from=builder /app/apps/api/package.json /app/apps/api/
 COPY --from=builder /app/apps/api/prisma /app/apps/api/prisma
+COPY apps/api/scripts/start-production.sh /app/apps/api/scripts/start-production.sh
+RUN chmod +x /app/apps/api/scripts/start-production.sh
 WORKDIR /app/apps/api
 ENV NODE_ENV=production
 EXPOSE 4000
-CMD ["sh", "-c", "npx prisma migrate deploy && node dist/main.js"]
+CMD ["sh", "scripts/start-production.sh"]
