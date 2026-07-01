@@ -13,7 +13,8 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:deploy": "prisma migrate deploy",
     "prisma:seed": "ts-node prisma/seed.ts",
-    "setup:storage": "ts-node scripts/setup-storage.ts"
+    "setup:storage": "ts-node scripts/setup-storage.ts",
+    "make:admin": "ts-node scripts/make-admin.ts"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"
