@@ -72,12 +72,21 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(private readonly prisma: PrismaService) {
     const devAuth = isDevAuthEnabled();
     const supabaseUrl = process.env.SUPABASE_URL?.replace(/\/$/, "");
+    // eslint-disable-next-line no-console
+    console.log("[jwt] init", {
+      devAuth,
+      supabaseUrl,
+      hasJwtSecret: !!process.env.SUPABASE_JWT_SECRET,
+      jwtSecretIsPlaceholder: process.env.SUPABASE_JWT_SECRET === "your-supabase-jwt-secret",
+    });
     if (!devAuth && !supabaseUrl) {
       throw new Error("SUPABASE_URL is not set");
     }
     const jwksUri = supabaseUrl
       ? `${supabaseUrl}/auth/v1/.well-known/jwks.json`
       : null;
+    // eslint-disable-next-line no-console
+    console.log("[jwt] jwksUri =", jwksUri);
 
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -121,7 +130,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         }
         getPublicKeyPem(header.kid, jwksUri)
           .then((pem) => done(null, pem))
-          .catch((err) => done(err as Error));
+          .catch((err) => {
+            // eslint-disable-next-line no-console
+            console.error("[jwt] JWKS fetch failed", { jwksUri, kid: header.kid, err: String(err) });
+            done(err as Error);
+          });
       },
     });
   }
